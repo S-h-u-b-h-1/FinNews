@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, User } from 'lucide-react'
 
 export default function Signup() {
@@ -11,6 +11,7 @@ export default function Signup() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({
@@ -29,11 +30,23 @@ export default function Signup() {
     }
 
     setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      console.log('Signup:', formData)
-    }, 1000)
+    // Call backend to create user
+    fetch('http://localhost:5001/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: formData.fullName, email: formData.email, password: formData.password })
+    })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Signup failed')
+        setLoading(false)
+        // Redirect to login
+        navigate('/login')
+      })
+      .catch((err) => {
+        setLoading(false)
+        setError(err.message)
+      })
   }
 
   return (

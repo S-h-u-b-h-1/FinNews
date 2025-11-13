@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, User } from 'lucide-react'
 
 export default function Login() {
@@ -9,6 +9,7 @@ export default function Login() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     setFormData({
@@ -20,13 +21,28 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      setError('')
-      // Handle login logic here
-      console.log('Login:', formData)
-    }, 1000)
+    // Call backend API
+    fetch('http://localhost:5001/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: formData.email, password: formData.password })
+    })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Login failed')
+        // Save token to localStorage
+        if (data.token) localStorage.setItem('token', data.token)
+        setLoading(false)
+        setError('')
+        // Redirect to home
+        navigate('/')
+        // reload to update navbar state
+        window.location.reload()
+      })
+      .catch((err) => {
+        setLoading(false)
+        setError(err.message)
+      })
   }
 
   return (
