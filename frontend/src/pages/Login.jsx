@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, User } from 'lucide-react'
+import { API_BASE_URL } from '../config/env'
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     // Call backend API
-    fetch('https://finnews-giwa.onrender.com/api/auth/login', {
+    fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: formData.email, password: formData.password })

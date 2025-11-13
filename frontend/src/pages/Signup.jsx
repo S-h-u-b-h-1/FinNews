@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, User } from 'lucide-react'
+import { API_BASE_URL } from '../config/env'
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -31,7 +32,7 @@ export default function Signup() {
 
     setLoading(true)
     // Call backend to create user
-    fetch('https://finnews-giwa.onrender.com/api/auth/signup', {
+    fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: formData.fullName, email: formData.email, password: formData.password })

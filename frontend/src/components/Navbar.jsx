@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Menu, X } from 'lucide-react'
+import { API_BASE_URL } from '../config/env'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -77,7 +78,7 @@ export default function Navbar() {
                 onClick={async () => {
                   const token = localStorage.getItem('token')
                   try {
-                    await fetch('http://localhost:5001/api/auth/logout', {
+                    await fetch(`${API_BASE_URL}/api/auth/logout`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ export default function Navbar() {
                 onClick={async () => {
                   const token = localStorage.getItem('token')
                   try {
-                    await fetch('http://localhost:5001/api/auth/logout', {
+                    await fetch(`${API_BASE_URL}/api/auth/logout`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
