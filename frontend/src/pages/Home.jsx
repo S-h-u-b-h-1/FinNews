@@ -263,6 +263,8 @@ export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams()
   const initialFilters = searchParams.get('filters') ? searchParams.get('filters').split(',').filter(Boolean) : []
   const [activeFilters, setActiveFilters] = useState(initialFilters) // array of strings
+  const initialSort = searchParams.get('sort') || 'newest'
+  const [sortOrder, setSortOrder] = useState(initialSort) // 'newest' | 'oldest'
 
   // debounce the search input to avoid re-computing on every keystroke
     useEffect(() => {
@@ -377,6 +379,19 @@ export default function Home() {
     }
   }
 
+  // Apply sorting by date (parse article.date)
+  const sortByDate = (list) => {
+    // safe copy
+    return list.slice().sort((a, b) => {
+      const da = new Date(a.date)
+      const db = new Date(b.date)
+      if (Number.isNaN(da) || Number.isNaN(db)) return 0
+      return sortOrder === 'oldest' ? da - db : db - da
+    })
+  }
+
+  baseFeed = sortByDate(baseFeed)
+
   // Pagination state: 5 articles per page in the main feed
   const [page, setPage] = useState(1)
   const pageSize = 5
@@ -403,9 +418,10 @@ export default function Home() {
     if (activeFilters && activeFilters.length) params.filters = activeFilters.join(',')
     if (authorFilter) params.author = authorFilter
     if (page && page > 1) params.page = String(page)
+    if (sortOrder && sortOrder !== 'newest') params.sort = sortOrder
     setSearchParams(params)
     // we intentionally include setSearchParams in deps through react-hooks linting
-  }, [activeFilters, authorFilter, page, setSearchParams])
+  }, [activeFilters, authorFilter, page, sortOrder, setSearchParams])
 
   const totalItems = baseFeed.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
@@ -515,6 +531,18 @@ export default function Home() {
                     <option key={a} value={a}>{a}</option>
                   ))}
                 </select>
+                {/* Sort by date select */}
+                <select
+                  value={sortOrder}
+                  onChange={(e) => { setSortOrder(e.target.value); setPage(1) }}
+                  className="ml-3 px-3 py-1 border rounded bg-white text-sm"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                </select>
+                <span className="ml-2 text-sm text-gray-600" title={sortOrder === 'newest' ? 'Sorted by newest first' : 'Sorted by oldest first'}>
+                  {sortOrder === 'newest' ? '▲' : '▼'}
+                </span>
               </div>
           </div>
 
