@@ -6,7 +6,6 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import About from './pages/About'
-import Contact from './pages/Contact'
 import ProtectedRoute from './components/ProtectedRoute'
 import PreLogin from './pages/PreLogin'
 
@@ -27,7 +26,6 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/prelogin" element={<PreLogin />} />
         <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
         {/* /dashboard removed — Home is used as the main authenticated page */}
       </Routes>
       <Footer />

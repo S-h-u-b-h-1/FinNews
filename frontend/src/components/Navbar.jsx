@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Search, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { API_BASE_URL } from '../config/env'
 import { AuthContext } from '../context/AuthContext'
 
@@ -43,17 +43,7 @@ export default function Navbar() {
               About
             </Link>
             {/* Dashboard link removed — Home serves as the main authenticated page */}
-            <Link 
-              to="/contact" 
-              className={`text-sm font-medium transition-colors ${
-                isActive('/contact') ? 'text-black' : 'text-gray-600 hover:text-black'
-              }`}
-            >
-              Contact
-            </Link>
-            <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-              <Search size={18} className="text-gray-700" />
-            </button>
+            {/* Contact and search button intentionally removed */}
             {!isAuth ? (
               <>
                 <Link 
@@ -119,9 +109,7 @@ export default function Navbar() {
             <Link to="/about" className="block py-2 text-gray-700 hover:text-black font-medium">
               About
             </Link>
-            <Link to="/contact" className="block py-2 text-gray-700 hover:text-black font-medium">
-              Contact
-            </Link>
+            {/* Contact removed from mobile menu */}
             {/* Dashboard link removed from mobile menu */}
             {!isAuth ? (
               <>
