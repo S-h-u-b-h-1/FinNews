@@ -15,9 +15,8 @@ export default function Home() {
       image: '/images/tech-news.svg',
       author: 'Sarah Chen',
       readTime: '5 min read',
-      claps: 2340
-      ,
-      tags: ['featured', 'trending']
+      claps: 2340,
+      tags: ['trending']
     },
     {
       id: 2,
@@ -28,9 +27,8 @@ export default function Home() {
       image: '/images/market-news.svg',
       author: 'James Wilson',
       readTime: '7 min read',
-      claps: 1856
-      ,
-      tags: ['featured', 'trending']
+      claps: 1856,
+      tags: ['trending','featured']
     },
     {
       id: 3,
@@ -41,9 +39,8 @@ export default function Home() {
       image: '/images/crypto-news.svg',
       author: 'Alex Morgan',
       readTime: '6 min read',
-      claps: 3102
-      ,
-      tags: ['featured', 'trending']
+      claps: 3102,
+      tags: ['trending','featured']
     },
     {
       id: 4,
@@ -54,8 +51,7 @@ export default function Home() {
       image: '/images/finance-news.svg',
       author: 'Emma Richardson',
       readTime: '8 min read',
-      claps: 1543
-      ,
+      claps: 1543,
       tags: ['featured']
     },
     {
@@ -67,8 +63,7 @@ export default function Home() {
       image: '/images/energy-news.svg',
       author: 'Michael Torres',
       readTime: '5 min read',
-      claps: 892
-      ,
+      claps: 892,
       tags: ['featured']
     },
     {
@@ -80,8 +75,7 @@ export default function Home() {
       image: '/images/realestate-news.svg',
       author: 'Lisa Anderson',
       readTime: '6 min read',
-      claps: 1220
-      ,
+      claps: 1220,
       tags: ['featured']
     },
     {
@@ -93,8 +87,7 @@ export default function Home() {
       image: '/images/economy-news.svg',
       author: 'Daniel Kim',
       readTime: '4 min read',
-      claps: 640
-      ,
+      claps: 640,
       tags: ['featured']
     },
     {
@@ -106,9 +99,8 @@ export default function Home() {
       image: '/images/ev-news.svg',
       author: 'Priya Patel',
       readTime: '5 min read',
-      claps: 980
-      ,
-      tags: []
+      claps: 980,
+      tags: ['featured']
     },
     {
       id: 9,
@@ -119,9 +111,8 @@ export default function Home() {
       image: '/images/markets-news.svg',
       author: 'Omar Hernandez',
       readTime: '7 min read',
-      claps: 410
-      ,
-      tags: []
+      claps: 410,
+      tags: ['featured']
     },
     {
       id: 10,
@@ -132,9 +123,8 @@ export default function Home() {
       image: '/images/health-news.svg',
       author: 'Rina Sato',
       readTime: '6 min read',
-      claps: 1550
-      ,
-      tags: []
+      claps: 1550,
+      tags: ['featured']
     },
     {
       id: 11,
@@ -145,8 +135,7 @@ export default function Home() {
       image: '/images/supplychain-news.svg',
       author: 'Tom Becker',
       readTime: '5 min read',
-      claps: 720
-      ,
+      claps: 720,
       tags: []
     },
     {
@@ -348,13 +337,17 @@ export default function Home() {
     })
   }, [newsArticles, tokens])
 
-  // Define featured list (7 items). This is independent from Trending which
-  // uses the top 3 of `newsArticles` and remains static.
+  // Define featured list (7 items) driven by the 'featured' tag.
   const featuredArticles = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('featured')).slice(0, 7), [newsArticles])
 
   // IDs for quick lookups (driven by tags now)
   const trendingIds = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).map(a => a.id), [newsArticles])
   const featuredIds = useMemo(() => featuredArticles.map(a => a.id), [featuredArticles])
+
+  // Author filter list
+  const uniqueAuthors = useMemo(() => Array.from(new Set(newsArticles.map(a => a.author))).sort(), [newsArticles])
+  const initialAuthor = searchParams.get('author') || ''
+  const [authorFilter, setAuthorFilter] = useState(initialAuthor)
 
   // Keep Featured constant (always the first featured article) and only
   // change the main feed when a search or explicit filter is active.
@@ -376,6 +369,14 @@ export default function Home() {
     baseFeed = newsArticles.slice(1)
   }
 
+  // Apply author filter if set
+  if (authorFilter) {
+    const af = String(authorFilter).trim().toLowerCase()
+    if (af.length) {
+      baseFeed = baseFeed.filter(a => String(a.author || '').toLowerCase().includes(af))
+    }
+  }
+
   // Pagination state: 5 articles per page in the main feed
   const [page, setPage] = useState(1)
   const pageSize = 5
@@ -385,17 +386,26 @@ export default function Home() {
     setPage(1)
   }, [debouncedQuery])
 
-  // Reset to first page when filters change and persist filters to URL
+  // Initialize page from URL, and persist filters/author/page to URL whenever they change.
+  const initialPage = (() => {
+    const p = parseInt(searchParams.get('page') || '1', 10)
+    return Number.isFinite(p) && p > 0 ? p : 1
+  })()
+
+  // Ensure page state initializes from URL on first render
   useEffect(() => {
-    setPage(1)
-    if (!activeFilters || activeFilters.length === 0) {
-      // remove param
-      searchParams.delete('filters')
-      setSearchParams(searchParams)
-    } else {
-      setSearchParams({ filters: activeFilters.join(',') })
-    }
-  }, [activeFilters])
+    setPage(initialPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const params = {}
+    if (activeFilters && activeFilters.length) params.filters = activeFilters.join(',')
+    if (authorFilter) params.author = authorFilter
+    if (page && page > 1) params.page = String(page)
+    setSearchParams(params)
+    // we intentionally include setSearchParams in deps through react-hooks linting
+  }, [activeFilters, authorFilter, page, setSearchParams])
 
   const totalItems = baseFeed.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
@@ -494,6 +504,17 @@ export default function Home() {
                     </button>
                   )
                 })}
+                {/* Author filter select */}
+                <select
+                  value={authorFilter}
+                  onChange={(e) => { setAuthorFilter(e.target.value); setPage(1) }}
+                  className="ml-3 px-3 py-1 border rounded bg-white text-sm"
+                >
+                  <option value="">All authors</option>
+                  {uniqueAuthors.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
               </div>
           </div>
 
