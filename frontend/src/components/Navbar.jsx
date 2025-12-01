@@ -1,20 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useContext, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Menu, X } from 'lucide-react'
 import { API_BASE_URL } from '../config/env'
+import { AuthContext } from '../context/AuthContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isAuth, setIsAuth] = useState(false)
+  const { token, logout, user } = useContext(AuthContext)
+  const isAuth = Boolean(token)
   const location = useLocation()
   const navigate = useNavigate()
 
   const isActive = (path) => location.pathname === path
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    setIsAuth(Boolean(token))
-  }, [])
+  
 
   return (
     <nav className="border-b border-gray-200 sticky top-0 z-50 bg-white">
@@ -43,6 +42,7 @@ export default function Navbar() {
             >
               About
             </Link>
+            {/* Dashboard link removed — Home serves as the main authenticated page */}
             <Link 
               to="/contact" 
               className={`text-sm font-medium transition-colors ${
@@ -76,8 +76,8 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={async () => {
-                  const token = localStorage.getItem('token')
                   try {
+                    // inform backend (best-effort)
                     await fetch(`${API_BASE_URL}/api/auth/logout`, {
                       method: 'POST',
                       headers: {
@@ -89,8 +89,7 @@ export default function Navbar() {
                   } catch (err) {
                     console.warn('Logout API error', err)
                   }
-                  localStorage.removeItem('token')
-                  setIsAuth(false)
+                  logout()
                   navigate('/')
                 }}
                 className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm"
@@ -123,6 +122,7 @@ export default function Navbar() {
             <Link to="/contact" className="block py-2 text-gray-700 hover:text-black font-medium">
               Contact
             </Link>
+            {/* Dashboard link removed from mobile menu */}
             {!isAuth ? (
               <>
                 <Link to="/login" className="block py-2 text-gray-700 hover:text-black font-medium">
@@ -135,7 +135,6 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={async () => {
-                  const token = localStorage.getItem('token')
                   try {
                     await fetch(`${API_BASE_URL}/api/auth/logout`, {
                       method: 'POST',
@@ -148,8 +147,7 @@ export default function Navbar() {
                   } catch (err) {
                     console.warn('Logout API error', err)
                   }
-                  localStorage.removeItem('token')
-                  setIsAuth(false)
+                  logout()
                   navigate('/')
                 }}
                 className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-medium"

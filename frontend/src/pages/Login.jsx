@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, User } from 'lucide-react'
 import { API_BASE_URL } from '../config/env'
+import { AuthContext } from '../context/AuthContext'
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { login } = useContext(AuthContext)
 
   const handleChange = (e) => {
     setFormData({
@@ -31,14 +33,13 @@ export default function Login() {
       .then(async (res) => {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Login failed')
-        // Save token to localStorage
-        if (data.token) localStorage.setItem('token', data.token)
+        // Save token and user via AuthContext
+        if (data.token) login(data.token, data.user)
         setLoading(false)
         setError('')
 
+        // Redirect to home after successful login
         navigate('/')
-        // reload to update navbar state
-        window.location.reload()
       })
       .catch((err) => {
         setLoading(false)
