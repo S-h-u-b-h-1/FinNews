@@ -653,38 +653,27 @@ export default function Home() {
             <div className="sticky top-20">
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Trending</h3>
-                <div className="space-y-6">
-                  {newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).slice(0,3).map((article, index) => (
-                    <div key={article.id} className="group cursor-pointer">
-                      <p className="text-sm font-bold text-gray-600 mb-1">{index + 1}</p>
-                      <h4 className="font-bold text-gray-900 group-hover:text-gray-600 transition-colors line-clamp-2 mb-2">
-                        {article.title}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        By <span className="font-medium">{article.author}</span>
-                      </p>
-                    </div>
+                <div className="bg-white border border-gray-100 rounded-lg divide-y divide-gray-100 overflow-hidden shadow-sm">
+                  {newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).slice(0,6).map((article, index) => (
+                    <a
+                      key={article.id}
+                      className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors"
+                      href="#"
+                    >
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center font-semibold">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900 line-clamp-2">{article.title}</h4>
+                        <div className="mt-1 text-xs text-gray-500">By {article.author} • {article.date} • {article.readTime}</div>
+                      </div>
+                      <div className="hidden sm:flex items-center text-xs text-gray-400">
+                        {article.claps} 👏
+                      </div>
+                    </a>
                   ))}
-                </div>
-              </div>
-
-            
-
-              {/* Newsletter Section */}
-              <div className="bg-gray-100 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Subscribe to our newsletter</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Stay updated with the latest financial news and market insights
-                </p>
-                <div className="space-y-3">
-                  <input
-                    type="email"
-                    placeholder="Your email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                  <button className="w-full px-3 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-                    Subscribe
-                  </button>
                 </div>
               </div>
             </div>
