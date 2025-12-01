@@ -21,7 +21,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-black">📰 Finnews</h1>
+            <h1 className="text-2xl font-bold text-black">📰 FinNews</h1>
           </Link>
 
           {/* Desktop Navigation */}
@@ -67,7 +67,6 @@ export default function Navbar() {
               <button
                 onClick={async () => {
                   try {
-                    // inform backend (best-effort)
                     await fetch(`${API_BASE_URL}/api/auth/logout`, {
                       method: 'POST',
                       headers: {

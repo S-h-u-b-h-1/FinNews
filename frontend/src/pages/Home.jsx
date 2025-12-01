@@ -258,14 +258,12 @@ export default function Home() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  // Active filters (multi-select). Persisted in `filters` query param as comma-separated values.
   const [searchParams, setSearchParams] = useSearchParams()
   const initialFilters = searchParams.get('filters') ? searchParams.get('filters').split(',').filter(Boolean) : []
-  const [activeFilters, setActiveFilters] = useState(initialFilters) // array of strings
+  const [activeFilters, setActiveFilters] = useState(initialFilters) 
   const initialSort = searchParams.get('sort') || 'newest'
   const [sortOrder, setSortOrder] = useState(initialSort) // 'newest' | 'oldest'
 
-  // debounce the search input to avoid re-computing on every keystroke
     useEffect(() => {
       const t = setTimeout(() => {
         setDebouncedQuery(searchQuery.trim())
@@ -278,7 +276,6 @@ export default function Home() {
       setDebouncedQuery(searchQuery.trim())
     }
 
-    // Helper: highlight matched tokens in a piece of text
     const escapeRegex = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
     const highlight = (text = '', tokens = []) => {
       if (!tokens || tokens.length === 0) return text
@@ -312,7 +309,6 @@ export default function Home() {
     if (!tokens.length) return newsArticles
 
     return newsArticles.filter((a) => {
-      // Build searchable fields
       const title = normalize(a.title)
       const desc = normalize(a.description)
       const author = normalize(a.author)
@@ -320,7 +316,6 @@ export default function Home() {
       const readTime = String(a.readTime || '')
       const claps = String(a.claps || '')
 
-      // For each token, require it to match at least one field
       return tokens.every((t) => {
         // numeric token: match claps or number in readTime
         if (/^\d+$/.test(t)) {
@@ -338,7 +333,7 @@ export default function Home() {
     })
   }, [newsArticles, tokens])
 
-  // Define featured list (7 items) driven by the 'featured' tag.
+
   const featuredArticles = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('featured')).slice(0, 7), [newsArticles])
 
   // IDs for quick lookups (driven by tags now)

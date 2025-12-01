@@ -20,23 +20,7 @@ export default function About() {
     }
   ]
 
-  const team = [
-    {
-      name: 'Alice Johnson',
-      role: 'Founder & CEO',
-      bio: 'Former financial journalist with 15 years of experience'
-    },
-    {
-      name: 'Bob Smith',
-      role: 'Editor-in-Chief',
-      bio: 'Expert in market analysis and economic reporting'
-    },
-    {
-      name: 'Carol Williams',
-      role: 'CTO',
-      bio: 'Tech entrepreneur focused on content platforms'
-    }
-  ]
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -56,7 +40,7 @@ export default function About() {
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Finnews was founded in 2023 with a simple vision: to make financial news accessible, reliable, and engaging for everyone.
+              Finnews was founded in 2025 with a simple vision: to make financial news accessible, reliable, and engaging for everyone.
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
               We noticed that quality financial information was often locked behind paywalls or written in jargon that ordinary people couldn't understand. We decided to change that.
@@ -89,19 +73,7 @@ export default function About() {
         </div>
 
         {/* Team Section */}
-        <div className="mb-16 border-b border-gray-200 pb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-4"></div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-sm font-medium text-gray-600 mb-2">{member.role}</p>
-                <p className="text-sm text-gray-600">{member.bio}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-16 border-b border-gray-200">
@@ -125,9 +97,6 @@ export default function About() {
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Join thousands of readers who trust Finnews for their daily financial updates.
           </p>
-          <button className="px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors">
-            Start Reading
-          </button>
         </div>
       </main>
     </div>
