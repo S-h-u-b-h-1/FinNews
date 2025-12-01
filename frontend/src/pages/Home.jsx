@@ -1,5 +1,6 @@
 import { Heart } from 'lucide-react'
 import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 export default function Home() {
   const [likedArticles, setLikedArticles] = useState({})
@@ -15,6 +16,8 @@ export default function Home() {
       author: 'Sarah Chen',
       readTime: '5 min read',
       claps: 2340
+      ,
+      tags: ['featured', 'trending']
     },
     {
       id: 2,
@@ -26,6 +29,8 @@ export default function Home() {
       author: 'James Wilson',
       readTime: '7 min read',
       claps: 1856
+      ,
+      tags: ['featured', 'trending']
     },
     {
       id: 3,
@@ -37,6 +42,8 @@ export default function Home() {
       author: 'Alex Morgan',
       readTime: '6 min read',
       claps: 3102
+      ,
+      tags: ['featured', 'trending']
     },
     {
       id: 4,
@@ -48,6 +55,8 @@ export default function Home() {
       author: 'Emma Richardson',
       readTime: '8 min read',
       claps: 1543
+      ,
+      tags: ['featured']
     },
     {
       id: 5,
@@ -59,6 +68,8 @@ export default function Home() {
       author: 'Michael Torres',
       readTime: '5 min read',
       claps: 892
+      ,
+      tags: ['featured']
     },
     {
       id: 6,
@@ -70,6 +81,8 @@ export default function Home() {
       author: 'Lisa Anderson',
       readTime: '6 min read',
       claps: 1220
+      ,
+      tags: ['featured']
     },
     {
       id: 7,
@@ -81,6 +94,8 @@ export default function Home() {
       author: 'Daniel Kim',
       readTime: '4 min read',
       claps: 640
+      ,
+      tags: ['featured']
     },
     {
       id: 8,
@@ -92,6 +107,8 @@ export default function Home() {
       author: 'Priya Patel',
       readTime: '5 min read',
       claps: 980
+      ,
+      tags: []
     },
     {
       id: 9,
@@ -103,6 +120,8 @@ export default function Home() {
       author: 'Omar Hernandez',
       readTime: '7 min read',
       claps: 410
+      ,
+      tags: []
     },
     {
       id: 10,
@@ -114,6 +133,8 @@ export default function Home() {
       author: 'Rina Sato',
       readTime: '6 min read',
       claps: 1550
+      ,
+      tags: []
     },
     {
       id: 11,
@@ -125,6 +146,8 @@ export default function Home() {
       author: 'Tom Becker',
       readTime: '5 min read',
       claps: 720
+      ,
+      tags: []
     },
     {
       id: 12,
@@ -136,6 +159,8 @@ export default function Home() {
       author: 'Maya Singh',
       readTime: '8 min read',
       claps: 2920
+      ,
+      tags: []
     }
     ,
     {
@@ -147,7 +172,8 @@ export default function Home() {
       image: '/images/energy-news.svg',
       author: 'Carlos Vega',
       readTime: '6 min read',
-      claps: 810
+      claps: 810,
+      tags: []
     },
     {
       id: 14,
@@ -158,7 +184,8 @@ export default function Home() {
       image: '/images/market-news.svg',
       author: 'Nora Patel',
       readTime: '5 min read',
-      claps: 430
+      claps: 430,
+      tags: []
     },
     {
       id: 15,
@@ -169,7 +196,8 @@ export default function Home() {
       image: '/images/health-news.svg',
       author: 'Dr. Alan Cho',
       readTime: '9 min read',
-      claps: 2200
+      claps: 2200,
+      tags: []
     },
     {
       id: 16,
@@ -180,7 +208,8 @@ export default function Home() {
       image: '/images/supplychain-news.svg',
       author: 'Greta Olson',
       readTime: '4 min read',
-      claps: 610
+      claps: 610,
+      tags: []
     },
     {
       id: 17,
@@ -191,7 +220,8 @@ export default function Home() {
       image: '/images/crypto-news.svg',
       author: 'Samir Rao',
       readTime: '7 min read',
-      claps: 975
+      claps: 975,
+      tags: []
     },
     {
       id: 18,
@@ -202,7 +232,8 @@ export default function Home() {
       image: '/images/tech-news.svg',
       author: 'Lina Hsu',
       readTime: '5 min read',
-      claps: 345
+      claps: 345,
+      tags: []
     },
     {
       id: 19,
@@ -213,7 +244,8 @@ export default function Home() {
       image: '/images/realestate-news.svg',
       author: 'Ethan Brooks',
       readTime: '6 min read',
-      claps: 512
+      claps: 512,
+      tags: []
     },
     {
       id: 20,
@@ -224,7 +256,8 @@ export default function Home() {
       image: '/images/ev-news.svg',
       author: 'Rafael Costa',
       readTime: '5 min read',
-      claps: 1225
+      claps: 1225,
+      tags: []
     }
   ]
 
@@ -237,6 +270,10 @@ export default function Home() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  // Active filters (multi-select). Persisted in `filters` query param as comma-separated values.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialFilters = searchParams.get('filters') ? searchParams.get('filters').split(',').filter(Boolean) : []
+  const [activeFilters, setActiveFilters] = useState(initialFilters) // array of strings
 
   // debounce the search input to avoid re-computing on every keystroke
     useEffect(() => {
@@ -281,7 +318,7 @@ export default function Home() {
 
   const tokens = useMemo(() => tokenize(debouncedQuery), [debouncedQuery])
 
-  const filtered = useMemo(() => {
+  const filteredAll = useMemo(() => {
     if (!tokens.length) return newsArticles
 
     return newsArticles.filter((a) => {
@@ -311,10 +348,33 @@ export default function Home() {
     })
   }, [newsArticles, tokens])
 
-  // Keep Featured constant (always the first article) and only change the
-  // main feed when a search is active. Trending should also remain fixed.
-  const featuredArticle = newsArticles[0]
-  const feedArticles = tokens.length ? filtered : newsArticles.slice(1)
+  // Define featured list (7 items). This is independent from Trending which
+  // uses the top 3 of `newsArticles` and remains static.
+  const featuredArticles = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('featured')).slice(0, 7), [newsArticles])
+
+  // IDs for quick lookups (driven by tags now)
+  const trendingIds = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).map(a => a.id), [newsArticles])
+  const featuredIds = useMemo(() => featuredArticles.map(a => a.id), [featuredArticles])
+
+  // Keep Featured constant (always the first featured article) and only
+  // change the main feed when a search or explicit filter is active.
+  const featuredArticle = featuredArticles[0]
+
+  // Decide which list should drive the main feed. Behavior:
+  // - If an explicit filter is active (trending/featured) show that set (and
+  //   still apply text search tokens if present).
+  // - Otherwise, if the user typed a search (tokens), show matching results
+  //   across all articles.
+  // - Otherwise show the default feed (articles after the featured one).
+  let baseFeed = []
+  if (activeFilters && activeFilters.length > 0) {
+    // show articles that have any of the selected tags
+    baseFeed = filteredAll.filter(a => Array.isArray(a.tags) && a.tags.some(t => activeFilters.includes(t)))
+  } else if (tokens.length) {
+    baseFeed = filteredAll
+  } else {
+    baseFeed = newsArticles.slice(1)
+  }
 
   // Pagination state: 5 articles per page in the main feed
   const [page, setPage] = useState(1)
@@ -325,7 +385,19 @@ export default function Home() {
     setPage(1)
   }, [debouncedQuery])
 
-  const totalItems = feedArticles.length
+  // Reset to first page when filters change and persist filters to URL
+  useEffect(() => {
+    setPage(1)
+    if (!activeFilters || activeFilters.length === 0) {
+      // remove param
+      searchParams.delete('filters')
+      setSearchParams(searchParams)
+    } else {
+      setSearchParams({ filters: activeFilters.join(',') })
+    }
+  }, [activeFilters])
+
+  const totalItems = baseFeed.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
 
   // Ensure current page is valid if the filtered set shrinks
@@ -335,8 +407,8 @@ export default function Home() {
 
   const paginatedArticles = useMemo(() => {
     const start = (page - 1) * pageSize
-    return feedArticles.slice(start, start + pageSize)
-  }, [feedArticles, page])
+    return baseFeed.slice(start, start + pageSize)
+  }, [baseFeed, page])
 
   return (
     <div className="min-h-screen bg-white">
@@ -398,6 +470,31 @@ export default function Home() {
                   Search
                 </button>
             </form>
+              {/* Filter buttons: All / Trending / Featured (multi-select) */}
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={() => { setActiveFilters([]); setPage(1) }}
+                  className={`px-3 py-1 rounded ${activeFilters.length === 0 ? 'bg-black text-white' : 'bg-white border'}`}>
+                  All
+                </button>
+                {['trending', 'featured'].map((f) => {
+                  const active = activeFilters.includes(f)
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setActiveFilters((prev) => {
+                          const next = prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]
+                          return next
+                        })
+                        setPage(1)
+                      }}
+                      className={`px-3 py-1 rounded ${active ? 'bg-black text-white' : 'bg-white border'}`}>
+                      {f.charAt(0).toUpperCase() + f.slice(1)}
+                    </button>
+                  )
+                })}
+              </div>
           </div>
 
         </div>
@@ -422,6 +519,15 @@ export default function Home() {
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-gray-600 transition-colors line-clamp-3">
                           {highlight(article.title, tokens)}
+                          {/* Badges for tags */}
+                          <span className="ml-2 inline-flex items-center gap-2">
+                            {Array.isArray(article.tags) && article.tags.includes('featured') && (
+                              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Featured</span>
+                            )}
+                            {Array.isArray(article.tags) && article.tags.includes('trending') && (
+                              <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">Trending</span>
+                            )}
+                          </span>
                       </h3>
                       <p className="text-gray-600 text-base mb-4 line-clamp-2">
                         {highlight(article.description, tokens)}
@@ -506,7 +612,7 @@ export default function Home() {
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Trending</h3>
                 <div className="space-y-6">
-                  {newsArticles.slice(0, 3).map((article, index) => (
+                  {newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).slice(0,3).map((article, index) => (
                     <div key={article.id} className="group cursor-pointer">
                       <p className="text-sm font-bold text-gray-600 mb-1">{index + 1}</p>
                       <h4 className="font-bold text-gray-900 group-hover:text-gray-600 transition-colors line-clamp-2 mb-2">
