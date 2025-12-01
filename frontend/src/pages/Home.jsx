@@ -84,7 +84,7 @@ export default function Home() {
       description: 'Monetary policy unchanged as inflation shows signs of cooling.',
       category: 'Economy',
       date: 'Nov 09, 2025',
-      image: '/images/economy-news.svg',
+      image: '/images/finance-news.svg',
       author: 'Daniel Kim',
       readTime: '4 min read',
       claps: 640,
@@ -96,7 +96,7 @@ export default function Home() {
       description: 'Automakers report strong demand for new EV models driving production expansion.',
       category: 'Automotive',
       date: 'Nov 09, 2025',
-      image: '/images/ev-news.svg',
+      image: '/images/tech-news.svg',
       author: 'Priya Patel',
       readTime: '5 min read',
       claps: 980,
@@ -108,7 +108,7 @@ export default function Home() {
       description: 'Investors pour capital into developing economies seeking higher yields.',
       category: 'Markets',
       date: 'Nov 08, 2025',
-      image: '/images/markets-news.svg',
+      image: '/images/market-news.svg',
       author: 'Omar Hernandez',
       readTime: '7 min read',
       claps: 410,
@@ -120,7 +120,7 @@ export default function Home() {
       description: 'Biotech startups announce promising results from clinical trials.',
       category: 'Health',
       date: 'Nov 07, 2025',
-      image: '/images/health-news.svg',
+      image: '/images/tech-news.svg',
       author: 'Rina Sato',
       readTime: '6 min read',
       claps: 1550,
@@ -132,7 +132,7 @@ export default function Home() {
       description: 'Logistics companies report smoother operations after recent upgrades.',
       category: 'Logistics',
       date: 'Nov 06, 2025',
-      image: '/images/supplychain-news.svg',
+      image: '/images/market-news.svg',
       author: 'Tom Becker',
       readTime: '5 min read',
       claps: 720,
@@ -144,11 +144,10 @@ export default function Home() {
       description: 'New initiatives aim to make AI models more transparent and secure.',
       category: 'Technology',
       date: 'Nov 05, 2025',
-      image: '/images/ai-news.svg',
+      image: '/images/tech-news.svg',
       author: 'Maya Singh',
       readTime: '8 min read',
-      claps: 2920
-      ,
+      claps: 2920,
       tags: []
     }
     ,
@@ -182,7 +181,7 @@ export default function Home() {
       description: 'Scientists report promising results from a new targeted therapy.',
       category: 'Health',
       date: 'Nov 02, 2025',
-      image: '/images/health-news.svg',
+      image: '/images/tech-news.svg',
       author: 'Dr. Alan Cho',
       readTime: '9 min read',
       claps: 2200,
@@ -194,7 +193,7 @@ export default function Home() {
       description: 'Robotics and AI streamline warehouse operations and delivery.',
       category: 'Logistics',
       date: 'Nov 01, 2025',
-      image: '/images/supplychain-news.svg',
+      image: '/images/market-news.svg',
       author: 'Greta Olson',
       readTime: '4 min read',
       claps: 610,
@@ -242,7 +241,7 @@ export default function Home() {
       description: 'Collaborations aim to speed up charging accessibility across regions.',
       category: 'Automotive',
       date: 'Oct 28, 2025',
-      image: '/images/ev-news.svg',
+      image: '/images/tech-news.svg',
       author: 'Rafael Costa',
       readTime: '5 min read',
       claps: 1225,
@@ -454,12 +453,9 @@ export default function Home() {
                   <p className="text-xl text-gray-600 mb-6 leading-relaxed">
                     {featuredArticle.description}
                   </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-300"></div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{featuredArticle.author}</p>
-                      <p className="text-sm text-gray-600">{featuredArticle.date} • {featuredArticle.readTime}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-700">By <span className="font-semibold text-gray-900">{featuredArticle.author}</span></p>
+                    <p className="text-sm text-gray-600">{featuredArticle.date} • {featuredArticle.readTime}</p>
                   </div>
                 </>
               ) : (
@@ -584,12 +580,9 @@ export default function Home() {
 
                       {/* Article Meta */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-300"></div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{article.author}</p>
-                            <p className="text-xs text-gray-600">{article.date} • {article.readTime}</p>
-                          </div>
+                        <div>
+                          <p className="text-sm text-gray-700">By <span className="text-sm font-medium text-gray-900">{article.author}</span></p>
+                          <p className="text-xs text-gray-600">{article.date} • {article.readTime}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -668,7 +661,7 @@ export default function Home() {
                         {article.title}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        by <span className="font-medium">{article.author}</span>
+                        By <span className="font-medium">{article.author}</span>
                       </p>
                     </div>
                   ))}
