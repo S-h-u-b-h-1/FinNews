@@ -13,13 +13,20 @@ const prisma = new PrismaClient()
 
 const tokenBlacklist = new Set()
 
-// Configure CORS to only allow the frontend origin. When running locally the
-// frontend dev server usually runs on http://localhost:3000 (Vite may pick
-// another port). Set FRONTEND_URL in your env when testing in a different
-// host/port (for example http://localhost:3001).
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+// Configure CORS to allow your frontend origin(s).
+// Default to the deployed frontend URL; override with FRONTEND_URL env var
+// during development (e.g. "http://localhost:3000" or "http://localhost:3001").
+// To allow multiple origins in development, set FRONTEND_URL to a comma-separated list.
+const FRONTEND_URL_RAW = process.env.FRONTEND_URL || 'https://fin-news-9jix.vercel.app'
+const allowedOrigins = FRONTEND_URL_RAW.split(',').map(s => s.trim()).filter(Boolean)
+
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl or server-to-server)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error('CORS not allowed by server'))
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
