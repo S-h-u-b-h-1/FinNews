@@ -20,30 +20,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
+          <Link to={isAuth ? "/home" : "/login"} className="flex-shrink-0">
             <h1 className="text-2xl font-bold text-black">📰 FinNews</h1>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <Link 
-              to="/" 
-              className={`text-sm font-medium transition-colors ${
-                isActive('/') ? 'text-black' : 'text-gray-600 hover:text-black'
-              }`}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/about" 
-              className={`text-sm font-medium transition-colors ${
-                isActive('/about') ? 'text-black' : 'text-gray-600 hover:text-black'
-              }`}
-            >
-              About
-            </Link>
-            {/* Dashboard link removed — Home serves as the main authenticated page */}
-            {/* Contact and search button intentionally removed */}
+            {isAuth && (
+              <Link 
+                to="/home" 
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/home') ? 'text-black' : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
             {!isAuth ? (
               <>
                 <Link 
@@ -79,7 +71,7 @@ export default function Navbar() {
                     console.warn('Logout API error', err)
                   }
                   logout()
-                  navigate('/')
+                  navigate('/login')
                 }}
                 className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium text-sm"
               >
@@ -102,14 +94,11 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden pb-4 border-t border-gray-200 pt-4 space-y-3">
-            <Link to="/" className="block py-2 text-gray-700 hover:text-black font-medium">
-              Home
-            </Link>
-            <Link to="/about" className="block py-2 text-gray-700 hover:text-black font-medium">
-              About
-            </Link>
-            {/* Contact removed from mobile menu */}
-            {/* Dashboard link removed from mobile menu */}
+            {isAuth && (
+              <Link to="/home" className="block py-2 text-gray-700 hover:text-black font-medium">
+                Dashboard
+              </Link>
+            )}
             {!isAuth ? (
               <>
                 <Link to="/login" className="block py-2 text-gray-700 hover:text-black font-medium">
@@ -135,7 +124,7 @@ export default function Navbar() {
                     console.warn('Logout API error', err)
                   }
                   logout()
-                  navigate('/')
+                  navigate('/login')
                 }}
                 className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-medium"
               >

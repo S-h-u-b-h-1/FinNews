@@ -1,10 +1,36 @@
 import { Heart } from 'lucide-react'
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { getNews } from '../utils/api'
 
 export default function Home() {
   const [likedArticles, setLikedArticles] = useState({})
+  const [newsArticles, setNewsArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
+  // Fetch news from API
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true)
+        const response = await getNews({ limit: 100 }) // Get all news articles
+        setNewsArticles(response.news || [])
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching news:', err)
+        setError('Failed to load news articles')
+        setNewsArticles([]) // Fallback to empty array
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNews()
+  }, [])
+
+  // Original hardcoded news articles (kept as fallback/comment)
+  /*
   const newsArticles = [
     {
       id: 1,
@@ -248,6 +274,7 @@ export default function Home() {
       tags: []
     }
   ]
+  */
 
   const toggleLike = (id) => {
     setLikedArticles(prev => ({
@@ -429,6 +456,32 @@ export default function Home() {
     const start = (page - 1) * pageSize
     return baseFeed.slice(start, start + pageSize)
   }, [baseFeed, page])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl text-gray-600">Loading news articles...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl text-red-600 mb-4">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -678,3 +731,6 @@ export default function Home() {
     </div>
   )
 }
+
+
+

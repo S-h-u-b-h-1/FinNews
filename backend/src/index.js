@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
+import newsRoutes from './routes/newsRoutes.js'
 
 dotenv.config()
 
@@ -20,11 +21,32 @@ const tokenBlacklist = new Set()
 const FRONTEND_URL_RAW = process.env.FRONTEND_URL || 'https://fin-news-9jix.vercel.app'
 const allowedOrigins = FRONTEND_URL_RAW.split(',').map(s => s.trim()).filter(Boolean)
 
+// Add common localhost ports for development
+const devOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://127.0.0.1:5175'
+]
+
+// Combine allowed origins with dev origins
+const allAllowedOrigins = [...allowedOrigins, ...devOrigins]
+
 app.use(cors({
   origin: function (origin, callback) {
     // allow requests with no origin (like curl or server-to-server)
     if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin)) return callback(null, true)
+    if (allAllowedOrigins.includes(origin)) return callback(null, true)
+    // In development, also allow any localhost origin
+    if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
+      return callback(null, true)
+    }
     return callback(new Error('CORS not allowed by server'))
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -121,6 +143,9 @@ app.get('/api/me', authenticate, async (req, res) => {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, name: true } })
   return res.json({ user })
 })
+
+// News routes
+app.use('/api/news', newsRoutes)
 
 // Start server
 app.listen(PORT, () => {

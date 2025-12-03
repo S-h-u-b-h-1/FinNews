@@ -39,7 +39,7 @@ export default function Login() {
         setError('')
 
         // Redirect to home after successful login
-        navigate('/')
+        navigate('/home')
       })
       .catch((err) => {
         setLoading(false)
