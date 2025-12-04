@@ -4,6 +4,24 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const signToken = (user) =>
+  jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      role: user.role
+    },
+    process.env.JWT_SECRET || 'dev_secret',
+    { expiresIn: '7d' }
+  )
+
+const formatUser = (user) => ({
+  id: user.id,
+  email: user.email,
+  name: user.name,
+  role: user.role
+})
+
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body
@@ -19,12 +37,12 @@ export const signup = async (req, res) => {
       data: {
         name,
         email,
-        passwordHash
-      },
-      select: { id: true, email: true, name: true }
+        passwordHash,
+        role: 'user'
+      }
     })
 
-    return res.status(201).json({ message: 'User created', user })
+    return res.status(201).json({ message: 'User created', user: formatUser(user) })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Server error' })
@@ -42,10 +60,9 @@ export const login = async (req, res) => {
     const match = await bcrypt.compare(password, user.passwordHash)
     if (!match) return res.status(401).json({ error: 'Invalid credentials' })
 
-    const payload = { sub: user.id, email: user.email }
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' })
+    const token = signToken(user)
 
-    return res.json({ token, user: { id: user.id, email: user.email, name: user.name } })
+    return res.json({ token, user: formatUser(user) })
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Server error' })
@@ -53,21 +70,15 @@ export const login = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-  const authHeader = req.headers.authorization || ''
-  const tokenFromHeader = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
-  const token = tokenFromHeader || req.body.token
-  if (!token) return res.status(400).json({ error: 'Token required' })
-
-  // Add token to blacklist (in a real app, you'd want to use Redis or similar)
-  // tokenBlacklist.add(token)
+  res.clearCookie('admin_token')
   return res.json({ message: 'Logged out' })
 }
 
 export const getCurrentUser = async (req, res) => {
   const userId = req.user.sub
-  const user = await prisma.user.findUnique({ 
-    where: { id: userId }, 
-    select: { id: true, email: true, name: true } 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, name: true, role: true }
   })
   return res.json({ user })
 }

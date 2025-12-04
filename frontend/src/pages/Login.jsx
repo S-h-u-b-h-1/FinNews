@@ -123,7 +123,7 @@ export default function Login() {
           </button>
           <button
             type="button"
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate('/creator')}
             className="w-full py-3 border border-gray-900 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
           >
             Upload your own news

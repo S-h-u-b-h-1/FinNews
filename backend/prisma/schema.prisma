@@ -15,6 +15,7 @@ model User {
   name          String?
   email         String    @unique
   passwordHash  String    // Store the hashed password (never plain text!)
+  role          String    @default("user")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }

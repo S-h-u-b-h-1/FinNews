@@ -18,7 +18,7 @@ export default function ProtectedRoute({ children }) {
         return
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/me`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!mounted) return

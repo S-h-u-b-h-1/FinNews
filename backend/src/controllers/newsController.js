@@ -73,6 +73,7 @@ export const createNews = asyncHandler(async (req, res) => {
       image,
       author,
       readTime,
+      claps = 0,
       tags = []
     } = req.body;
 
@@ -86,7 +87,7 @@ export const createNews = asyncHandler(async (req, res) => {
         author,
         readTime,
         tags,
-        claps: 0
+        claps: typeof claps === 'number' ? claps : 0
       }
     });
 

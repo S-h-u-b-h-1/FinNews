@@ -7,6 +7,9 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthContext } from './context/AuthContext'
+import CreatorAccess from './pages/CreatorAccess'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminRoute from './components/AdminRoute'
 
 // Component to redirect based on auth status
 function Root() {
@@ -49,6 +52,15 @@ export default function App() {
               <Home />
             </ProtectedRoute>
           } 
+        />
+        <Route path="/creator" element={<CreatorAccess />} />
+        <Route 
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
         />
         {/* Redirect any other routes to root */}
         <Route path="*" element={<Navigate to="/" replace />} />
