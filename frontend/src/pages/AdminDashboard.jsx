@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         ...formData,
         date: formData.date || new Date().toISOString().split('T')[0],
         tags: formData.tags
-          ? formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
+          ? formData.tags.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean)
           : [],
         claps: Number(formData.claps) || 0
       }

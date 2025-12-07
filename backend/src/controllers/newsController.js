@@ -77,6 +77,13 @@ export const createNews = asyncHandler(async (req, res) => {
       tags = []
     } = req.body;
 
+    // sanitize incoming values
+    const safeTags = Array.isArray(tags)
+      ? tags.map(t => String(t || '').trim().toLowerCase()).filter(Boolean)
+      : []
+    const safeClaps = typeof claps === 'number' ? claps : Number(claps) || 0
+    const safeAuthor = String(author || '').trim()
+
     const createdNews = await prisma.news.create({
       data: {
         title,
@@ -84,10 +91,10 @@ export const createNews = asyncHandler(async (req, res) => {
         category,
         date: date || new Date().toISOString().split('T')[0],
         image,
-        author,
+        author: safeAuthor,
         readTime,
-        tags,
-        claps: typeof claps === 'number' ? claps : 0
+        tags: safeTags,
+        claps: safeClaps
       }
     });
 

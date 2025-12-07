@@ -18,7 +18,16 @@ export default function Home() {
       try {
         setLoading(true)
         const response = await getNews({ limit: 100 }) // Get all news articles
-        setNewsArticles(response.news || [])
+        const sanitize = (a) => ({
+          ...a,
+          // ensure tags is an array of lowercase trimmed strings
+          tags: Array.isArray(a.tags) ? a.tags.map(t => String(t || '').trim().toLowerCase()) : [],
+          // ensure claps is a number
+          claps: typeof a.claps === 'number' ? a.claps : Number(a.claps) || 0,
+          // ensure author is a trimmed string
+          author: String(a.author || '').trim()
+        })
+        setNewsArticles((response.news || []).map(sanitize))
         setError(null)
       } catch (err) {
         console.error('Error fetching news:', err)
