@@ -32,10 +32,13 @@ const signToken = (user) =>
 
 const sendAuthResponse = (user, res, status = 200) => {
   const token = signToken(user)
+  // Set cookie for browser-based admin flows (credentials: include required)
   res.cookie('admin_token', token, cookieOptions)
+  // Also include token in JSON response so clients can use Authorization header
   res.status(status).json({
     message: status === 201 ? 'Admin account created' : 'Authenticated',
-    user: formatUser(user)
+    user: formatUser(user),
+    token
   })
 }
 

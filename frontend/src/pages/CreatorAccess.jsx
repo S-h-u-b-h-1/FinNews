@@ -59,6 +59,11 @@ export default function CreatorAccess() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || data.error || 'Request failed')
 
+      // Store token in localStorage so AdminRoute can use Authorization header
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+        if (data.user) localStorage.setItem('user', JSON.stringify(data.user))
+      }
       navigate('/admin/dashboard')
     } catch (err) {
       setError(err.message)

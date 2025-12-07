@@ -11,8 +11,11 @@ export default function AdminRoute({ children }) {
 
     const verify = async () => {
       try {
+        const token = localStorage.getItem('token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
         const res = await fetch(`${API_BASE_URL}/api/admin/me`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers
         })
         if (!mounted) return
         setAuthorized(res.ok)
