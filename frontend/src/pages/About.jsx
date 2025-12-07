@@ -36,7 +36,7 @@ export default function About() {
         </div>
 
         {/* Story Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 border-b border-gray-200 pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 border-b border-gray-200 pb-16">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
@@ -49,8 +49,8 @@ export default function About() {
               Today, Finnews is trusted by thousands of readers who rely on our reporting to make informed financial decisions.
             </p>
           </div>
-          <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-            <p className="text-gray-500">Image placeholder</p>
+          <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center p-8">
+            <img src="/images/finnews-logo.svg" alt="Finnews logo" className="h-full max-w-full object-contain" />
           </div>
         </div>
 

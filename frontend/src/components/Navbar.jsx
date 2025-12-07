@@ -36,6 +36,16 @@ export default function Navbar() {
                 Dashboard
               </Link>
             )}
+            {isAuth && (
+              <Link
+                to="/about"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/about') ? 'text-black' : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                About
+              </Link>
+            )}
             {!isAuth ? (
               <>
                 <Link 
@@ -68,7 +78,7 @@ export default function Navbar() {
                       body: JSON.stringify({ token })
                     })
                   } catch (err) {
-                    console.warn('Logout API error', err)
+                    // logout API error (ignored)
                   }
                   logout()
                   navigate('/login')
@@ -99,6 +109,11 @@ export default function Navbar() {
                 Dashboard
               </Link>
             )}
+            {isAuth && (
+              <Link to="/about" className="block py-2 text-gray-700 hover:text-black font-medium">
+                About
+              </Link>
+            )}
             {!isAuth ? (
               <>
                 <Link to="/login" className="block py-2 text-gray-700 hover:text-black font-medium">
@@ -121,7 +136,7 @@ export default function Navbar() {
                       body: JSON.stringify({ token })
                     })
                   } catch (err) {
-                    console.warn('Logout API error', err)
+                    // logout API error (ignored)
                   }
                   logout()
                   navigate('/login')

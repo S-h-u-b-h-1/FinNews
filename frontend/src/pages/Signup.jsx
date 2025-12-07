@@ -51,8 +51,8 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Join Finnews</h1>
@@ -60,7 +60,7 @@ export default function Signup() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -168,17 +168,16 @@ export default function Signup() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="my-6 flex items-center gap-4">
-          <div className="flex-1 border-t border-gray-200"></div>
-          <span className="text-gray-600 text-sm">or</span>
-          <div className="flex-1 border-t border-gray-200"></div>
+        {/* Admin signup link (visible only on Signup page) */}
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => navigate('/creator?mode=signup')}
+            className="inline-block px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-50"
+          >
+            Sign up as an admin
+          </button>
         </div>
-
-        {/* Social Login */}
-        <button className="w-full py-3 border border-gray-300 rounded-lg font-medium text-gray-900 hover:bg-gray-50 transition-colors mb-4">
-          Continue with Google
-        </button>
 
         {/* Login Link */}
         <p className="text-center text-gray-600">

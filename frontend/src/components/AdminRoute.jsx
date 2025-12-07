@@ -17,7 +17,7 @@ export default function AdminRoute({ children }) {
         if (!mounted) return
         setAuthorized(res.ok)
       } catch (error) {
-        console.warn('Admin check failed', error)
+        // admin check failed (ignored)
         if (mounted) setAuthorized(false)
       } finally {
         if (mounted) setLoading(false)

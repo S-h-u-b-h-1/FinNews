@@ -28,7 +28,7 @@ export default function ProtectedRoute({ children }) {
           setAuthorized(false)
         }
       } catch (err) {
-        console.warn('Auth check failed', err)
+        // auth check failed; clear local token
         localStorage.removeItem('token')
         setAuthorized(false)
       } finally {

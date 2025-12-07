@@ -3,6 +3,8 @@ import { useContext } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
+import About from './pages/About'
+import PewLogin from './pages/PewLogin'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -14,7 +16,7 @@ import AdminRoute from './components/AdminRoute'
 // Component to redirect based on auth status
 function Root() {
   const { token } = useContext(AuthContext)
-  return token ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
+  return token ? <Navigate to="/home" replace /> : <PewLogin />
 }
 
 // Component to redirect authenticated users away from login/signup
@@ -52,6 +54,14 @@ export default function App() {
               <Home />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/about"
+          element={
+            <ProtectedRoute>
+              <About />
+            </ProtectedRoute>
+          }
         />
         <Route path="/creator" element={<CreatorAccess />} />
         <Route 

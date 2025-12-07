@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
+import path from 'path'
 import newsRoutes from './routes/newsRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
@@ -69,6 +70,20 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/news', newsRoutes)
 
 // Start server
+// If in production, serve the built frontend from the parent frontend/dist folder
+if (process.env.NODE_ENV === 'production') {
+  try {
+    const __dirname = path.dirname(new URL(import.meta.url).pathname)
+    const frontDist = path.join(__dirname, '..', '..', 'frontend', 'dist')
+    app.use(express.static(frontDist))
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(frontDist, 'index.html'))
+    })
+  } catch (err) {
+    console.warn('Could not configure static frontend serving:', err)
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })

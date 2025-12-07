@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="100%" height="100%" role="img" aria-labelledby="finnewsTitle finnewsDesc">
+  <title id="finnewsTitle">FinNews logo</title>
+  <desc id="finnewsDesc">Stylized newspaper icon with wordmark FinNews — compact, responsive SVG.</desc>
+  <defs>
+    <linearGradient id="lnr" x1="0" x2="1">
+      <stop offset="0" stop-color="#0ea5a3" />
+      <stop offset="1" stop-color="#06b6d4" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+  </defs>
+
+  <!-- Background (transparent) -->
+  <rect width="240" height="120" fill="none" />
+
+  <!-- Newspaper / icon on the left -->
+  <g transform="translate(12,12)" filter="url(#shadow)">
+    <rect x="0" y="0" width="84" height="72" rx="8" fill="#fff" stroke="#e6eef0" />
+    <rect x="8" y="8" width="36" height="12" rx="3" fill="url(#lnr)" />
+    <rect x="8" y="26" width="68" height="8" rx="3" fill="#f3f7f8" />
+    <rect x="8" y="40" width="68" height="8" rx="3" fill="#f3f7f8" />
+    <rect x="8" y="54" width="44" height="8" rx="3" fill="#f3f7f8" />
+    <circle cx="66" cy="58" r="10" fill="#06b6d4" />
+    <text x="62" y="62" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="700" fill="#fff">FN</text>
+  </g>
+
+  <!-- Wordmark on the right -->
+  <g transform="translate(112,32)">
+    <text x="0" y="0" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto" font-size="28" font-weight="700" fill="url(#lnr)">Fin</text>
+    <text x="62" y="0" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto" font-size="28" font-weight="700" fill="#0f172a">News</text>
+    <rect x="0" y="6" width="150" height="3" rx="2" fill="#e6eef0" opacity="0.9" />
+  </g>
+
+</svg>

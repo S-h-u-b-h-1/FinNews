@@ -7,7 +7,11 @@ const prisma = new PrismaClient()
 
 const cookieOptions = {
   httpOnly: true,
-  sameSite: 'lax',
+  // When running in production the frontend and backend are often on different
+  // origins (cross-site). For cookies to be sent with cross-site XHR/fetch
+  // requests we must set `sameSite: 'none'` and `secure: true`.
+  // During development keep `lax` to make local testing easier.
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   secure: process.env.NODE_ENV === 'production',
   maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 }

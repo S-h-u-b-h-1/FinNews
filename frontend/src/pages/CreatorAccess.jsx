@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Mail, Lock, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../config/env'
 
 export default function CreatorAccess() {
-  const [mode, setMode] = useState('login')
+  const location = useLocation()
+  const qMode = new URLSearchParams(location.search).get('mode')
+  const [mode, setMode] = useState(qMode === 'signup' ? 'signup' : 'login')
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -19,7 +22,7 @@ export default function CreatorAccess() {
           navigate('/admin/dashboard', { replace: true })
         }
       } catch (err) {
-        console.debug('No existing admin session', err.message)
+        // no existing admin session (silent in production)
       }
     }
     checkExistingSession()

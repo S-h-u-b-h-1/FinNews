@@ -69,15 +69,9 @@ const seedDatabase = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log('Connected to MongoDB');
-
-    // Clear existing data
+    // Clear existing data and insert seed data
     await News.deleteMany({});
-    console.log('Cleared existing news data');
-
-    // Insert seed data
     const createdNews = await News.insertMany(seedNews);
-    console.log(`Seeded ${createdNews.length} news articles`);
 
     process.exit(0);
   } catch (error) {

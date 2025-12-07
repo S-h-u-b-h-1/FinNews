@@ -48,8 +48,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome back</h1>
@@ -57,7 +57,7 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -102,16 +102,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 border border-gray-300 rounded" />
-              <span className="text-gray-700">Remember me</span>
-            </label>
-            <a href="#" className="text-black hover:text-gray-700 font-medium">
-              Forgot password?
-            </a>
-          </div>
+          {/* Remember me and forgot-password removed */}
 
           {/* Submit Button */}
           <button
@@ -121,26 +112,21 @@ export default function Login() {
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate('/creator')}
-            className="w-full py-3 border border-gray-900 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Upload your own news
-          </button>
+          {/* Upload button removed per request */}
         </form>
 
-        {/* Divider */}
-        <div className="my-6 flex items-center gap-4">
-          <div className="flex-1 border-t border-gray-200"></div>
-          <span className="text-gray-600 text-sm">or</span>
-          <div className="flex-1 border-t border-gray-200"></div>
+        {/* Option to go to admin/creator login (keeps Upload your own news button as well) */}
+        <div className="mt-2 text-center">
+          <small className="text-sm text-gray-500">Need admin access?</small>
+          <div className="mt-2">
+            <button
+              onClick={() => navigate('/creator')}
+              className="inline-block px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-800 hover:bg-gray-50"
+            >
+              Creator/Admin login
+            </button>
+          </div>
         </div>
-
-        {/* Social Login */}
-        <button className="w-full py-3 border border-gray-300 rounded-lg font-medium text-gray-900 hover:bg-gray-50 transition-colors mb-4">
-          Continue with Google
-        </button>
 
         {/* Sign Up Link */}
         <p className="text-center text-gray-600">

@@ -111,7 +111,7 @@ export default function AdminDashboard() {
         credentials: 'include'
       })
     } catch (err) {
-      console.warn('Logout failed', err)
+      // logout failed (ignored)
     } finally {
       navigate('/creator', { replace: true })
     }

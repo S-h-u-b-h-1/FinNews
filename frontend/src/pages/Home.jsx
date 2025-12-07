@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react'
+// Using emoji for claps instead of an icon
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getNews } from '../utils/api'
@@ -8,6 +8,9 @@ export default function Home() {
   const [newsArticles, setNewsArticles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Track clap counts per-article locally so UI updates immediately when users clap
+  const [clapsMap, setClapsMap] = useState({})
 
   // Fetch news from API
   useEffect(() => {
@@ -29,257 +32,21 @@ export default function Home() {
     fetchNews()
   }, [])
 
-  // Original hardcoded news articles (kept as fallback/comment)
-  /*
-  const newsArticles = [
-    {
-      id: 1,
-      title: 'Tech Giants Report Record Earnings',
-      description: 'Major technology companies announce their strongest quarterly results, beating market expectations.',
-      category: 'Technology',
-      date: 'Nov 12, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Sarah Chen',
-      readTime: '5 min read',
-      claps: 2340,
-      tags: ['trending']
-    },
-    {
-      id: 2,
-      title: 'Stock Market Reaches All-Time High',
-      description: 'Global markets surge as investors gain confidence in economic recovery and growth prospects.',
-      category: 'Markets',
-      date: 'Nov 12, 2025',
-      image: '/images/market-news.svg',
-      author: 'James Wilson',
-      readTime: '7 min read',
-      claps: 1856,
-      tags: ['trending','featured']
-    },
-    {
-      id: 3,
-      title: 'Cryptocurrency Volatility Continues',
-      description: 'Digital assets experience significant price fluctuations amid regulatory developments.',
-      category: 'Crypto',
-      date: 'Nov 11, 2025',
-      image: '/images/crypto-news.svg',
-      author: 'Alex Morgan',
-      readTime: '6 min read',
-      claps: 3102,
-      tags: ['trending','featured']
-    },
-    {
-      id: 4,
-      title: 'Banking Sector Shows Resilience',
-      description: 'Financial institutions demonstrate strong fundamentals despite economic headwinds.',
-      category: 'Finance',
-      date: 'Nov 11, 2025',
-      image: '/images/finance-news.svg',
-      author: 'Emma Richardson',
-      readTime: '8 min read',
-      claps: 1543,
-      tags: ['featured']
-    },
-    {
-      id: 5,
-      title: 'Oil Prices Stabilize on Supply News',
-      description: 'Energy markets stabilize following announcements about production decisions.',
-      category: 'Energy',
-      date: 'Nov 10, 2025',
-      image: '/images/energy-news.svg',
-      author: 'Michael Torres',
-      readTime: '5 min read',
-      claps: 892,
-      tags: ['featured']
-    },
-    {
-      id: 6,
-      title: 'Real Estate Market Booms Across Regions',
-      description: 'Property values surge as demand remains strong in major metropolitan areas.',
-      category: 'Real Estate',
-      date: 'Nov 10, 2025',
-      image: '/images/realestate-news.svg',
-      author: 'Lisa Anderson',
-      readTime: '6 min read',
-      claps: 1220,
-      tags: ['featured']
-    },
-    {
-      id: 7,
-      title: 'Central Bank Holds Interest Rates Steady',
-      description: 'Monetary policy unchanged as inflation shows signs of cooling.',
-      category: 'Economy',
-      date: 'Nov 09, 2025',
-      image: '/images/finance-news.svg',
-      author: 'Daniel Kim',
-      readTime: '4 min read',
-      claps: 640,
-      tags: ['featured']
-    },
-    {
-      id: 8,
-      title: 'Electric Vehicles Adoption Accelerates',
-      description: 'Automakers report strong demand for new EV models driving production expansion.',
-      category: 'Automotive',
-      date: 'Nov 09, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Priya Patel',
-      readTime: '5 min read',
-      claps: 980,
-      tags: ['featured']
-    },
-    {
-      id: 9,
-      title: 'Emerging Markets Attract Foreign Investment',
-      description: 'Investors pour capital into developing economies seeking higher yields.',
-      category: 'Markets',
-      date: 'Nov 08, 2025',
-      image: '/images/market-news.svg',
-      author: 'Omar Hernandez',
-      readTime: '7 min read',
-      claps: 410,
-      tags: ['featured']
-    },
-    {
-      id: 10,
-      title: 'Healthcare Innovation Spurs New Treatments',
-      description: 'Biotech startups announce promising results from clinical trials.',
-      category: 'Health',
-      date: 'Nov 07, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Rina Sato',
-      readTime: '6 min read',
-      claps: 1550,
-      tags: ['featured']
-    },
-    {
-      id: 11,
-      title: 'Supply Chain Improvements Ease Inflation Pressures',
-      description: 'Logistics companies report smoother operations after recent upgrades.',
-      category: 'Logistics',
-      date: 'Nov 06, 2025',
-      image: '/images/market-news.svg',
-      author: 'Tom Becker',
-      readTime: '5 min read',
-      claps: 720,
-      tags: []
-    },
-    {
-      id: 12,
-      title: 'Tech Startups Focus on AI Safety',
-      description: 'New initiatives aim to make AI models more transparent and secure.',
-      category: 'Technology',
-      date: 'Nov 05, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Maya Singh',
-      readTime: '8 min read',
-      claps: 2920,
-      tags: []
-    }
-    ,
-    {
-      id: 13,
-      title: 'Renewable Energy Investment Climbs',
-      description: 'Investors increase funding in solar and wind projects worldwide.',
-      category: 'Energy',
-      date: 'Nov 04, 2025',
-      image: '/images/energy-news.svg',
-      author: 'Carlos Vega',
-      readTime: '6 min read',
-      claps: 810,
-      tags: []
-    },
-    {
-      id: 14,
-      title: 'Retail Sales Beat Expectations',
-      description: 'Consumer spending remains strong as holiday season approaches.',
-      category: 'Markets',
-      date: 'Nov 03, 2025',
-      image: '/images/market-news.svg',
-      author: 'Nora Patel',
-      readTime: '5 min read',
-      claps: 430,
-      tags: []
-    },
-    {
-      id: 15,
-      title: 'Breakthrough in Cancer Research',
-      description: 'Scientists report promising results from a new targeted therapy.',
-      category: 'Health',
-      date: 'Nov 02, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Dr. Alan Cho',
-      readTime: '9 min read',
-      claps: 2200,
-      tags: []
-    },
-    {
-      id: 16,
-      title: 'Logistics Firms Adopt Automation',
-      description: 'Robotics and AI streamline warehouse operations and delivery.',
-      category: 'Logistics',
-      date: 'Nov 01, 2025',
-      image: '/images/market-news.svg',
-      author: 'Greta Olson',
-      readTime: '4 min read',
-      claps: 610,
-      tags: []
-    },
-    {
-      id: 17,
-      title: 'New Regulations Impact Crypto Exchanges',
-      description: 'Policy changes force exchanges to strengthen compliance programs.',
-      category: 'Crypto',
-      date: 'Oct 31, 2025',
-      image: '/images/crypto-news.svg',
-      author: 'Samir Rao',
-      readTime: '7 min read',
-      claps: 975,
-      tags: []
-    },
-    {
-      id: 18,
-      title: 'AI Tools Improve Small Business Operations',
-      description: 'Affordable AI tools help small businesses optimize customer service.',
-      category: 'Technology',
-      date: 'Oct 30, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Lina Hsu',
-      readTime: '5 min read',
-      claps: 345,
-      tags: []
-    },
-    {
-      id: 19,
-      title: 'Housing Starts Increase in Suburbs',
-      description: 'New home construction picks up as developers target suburban markets.',
-      category: 'Real Estate',
-      date: 'Oct 29, 2025',
-      image: '/images/realestate-news.svg',
-      author: 'Ethan Brooks',
-      readTime: '6 min read',
-      claps: 512,
-      tags: []
-    },
-    {
-      id: 20,
-      title: 'Automakers Expand EV Charging Networks',
-      description: 'Collaborations aim to speed up charging accessibility across regions.',
-      category: 'Automotive',
-      date: 'Oct 28, 2025',
-      image: '/images/tech-news.svg',
-      author: 'Rafael Costa',
-      readTime: '5 min read',
-      claps: 1225,
-      tags: []
-    }
-  ]
-  */
+  // Initialize clapsMap from fetched articles
+  useEffect(() => {
+    if (!newsArticles || newsArticles.length === 0) return
+    const map = {}
+    newsArticles.forEach(a => {
+      map[a.id] = Number.isFinite(a.claps) ? a.claps : 0
+    })
+    setClapsMap(map)
+  }, [newsArticles])
 
   const toggleLike = (id) => {
-    setLikedArticles(prev => ({
-      ...prev,
-      [id]: !prev[id]
+    // Always increment clap count by 1 for this article on each click
+    setClapsMap(prevMap => ({
+      ...prevMap,
+      [id]: (prevMap[id] || 0) + 1
     }))
   }
 
@@ -290,6 +57,13 @@ export default function Home() {
   const [activeFilters, setActiveFilters] = useState(initialFilters) 
   const initialSort = searchParams.get('sort') || 'newest'
   const [sortOrder, setSortOrder] = useState(initialSort) // 'newest' | 'oldest'
+  const initialMinClaps = (() => {
+    const v = parseInt(searchParams.get('minClaps') || '0', 10)
+    return Number.isFinite(v) && v > 0 ? v : 0
+  })()
+  const [minClaps, setMinClaps] = useState(initialMinClaps)
+  const initialClapSort = searchParams.get('clapSort') || ''
+  const [clapSort, setClapSort] = useState(initialClapSort)
 
     useEffect(() => {
       const t = setTimeout(() => {
@@ -367,6 +141,19 @@ export default function Home() {
   const trendingIds = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).map(a => a.id), [newsArticles])
   const featuredIds = useMemo(() => featuredArticles.map(a => a.id), [featuredArticles])
 
+  // Compute trending articles by clap count (descending). Use clapsMap (live) or article.claps as fallback.
+  const trendingArticles = useMemo(() => {
+    if (!newsArticles || newsArticles.length === 0) return []
+    return newsArticles
+      .slice()
+      .sort((a, b) => {
+        const ca = (clapsMap[a.id] ?? a.claps ?? 0)
+        const cb = (clapsMap[b.id] ?? b.claps ?? 0)
+        return cb - ca
+      })
+      .slice(0, 3)
+  }, [newsArticles, clapsMap])
+
   // Author filter list
   const uniqueAuthors = useMemo(() => Array.from(new Set(newsArticles.map(a => a.author))).sort(), [newsArticles])
   const initialAuthor = searchParams.get('author') || ''
@@ -400,6 +187,11 @@ export default function Home() {
     }
   }
 
+  // Apply minimum clap filter if set
+  if (minClaps && minClaps > 0) {
+    baseFeed = baseFeed.filter(a => (clapsMap[a.id] ?? a.claps ?? 0) >= minClaps)
+  }
+
   // Apply sorting by date (parse article.date)
   const sortByDate = (list) => {
     // safe copy
@@ -412,6 +204,15 @@ export default function Home() {
   }
 
   baseFeed = sortByDate(baseFeed)
+
+  // Apply clap-based sorting when requested (use live `clapsMap` with article fallback)
+  if (clapSort && clapSort !== '') {
+    baseFeed = baseFeed.slice().sort((a, b) => {
+      const ca = (clapsMap[a.id] ?? a.claps ?? 0)
+      const cb = (clapsMap[b.id] ?? b.claps ?? 0)
+      return clapSort === 'min' ? ca - cb : cb - ca
+    })
+  }
 
   // Pagination state: 5 articles per page in the main feed
   const [page, setPage] = useState(1)
@@ -440,9 +241,11 @@ export default function Home() {
     if (authorFilter) params.author = authorFilter
     if (page && page > 1) params.page = String(page)
     if (sortOrder && sortOrder !== 'newest') params.sort = sortOrder
+    if (minClaps && minClaps > 0) params.minClaps = String(minClaps)
+    if (clapSort && clapSort !== '') params.clapSort = clapSort
     setSearchParams(params)
     // we intentionally include setSearchParams in deps through react-hooks linting
-  }, [activeFilters, authorFilter, page, sortOrder, setSearchParams])
+  }, [activeFilters, authorFilter, page, sortOrder, minClaps, clapSort, setSearchParams])
 
   const totalItems = baseFeed.length
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
@@ -587,6 +390,17 @@ export default function Home() {
                 <span className="ml-2 text-sm text-gray-600" title={sortOrder === 'newest' ? 'Sorted by newest first' : 'Sorted by oldest first'}>
                   {sortOrder === 'newest' ? '▲' : '▼'}
                 </span>
+                {/* Clap sort buttons */}
+                <button
+                  onClick={() => { setClapSort('min'); setPage(1) }}
+                  className={`ml-2 px-3 py-1 rounded ${clapSort === 'min' ? 'bg-black text-white' : 'bg-white border'}`}>
+                  Least claps
+                </button>
+                <button
+                  onClick={() => { setClapSort('max'); setPage(1) }}
+                  className={`ml-2 px-3 py-1 rounded ${clapSort === 'max' ? 'bg-black text-white' : 'bg-white border'}`}>
+                  Most claps
+                </button>
               </div>
           </div>
 
@@ -635,12 +449,11 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => toggleLike(article.id)}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center gap-2"
+                            aria-label="Clap for article"
                           >
-                            <Heart
-                              size={16}
-                              className={likedArticles[article.id] ? 'fill-red-500 text-red-500' : 'text-gray-600'}
-                            />
+                            <span className={`${likedArticles[article.id] ? 'text-yellow-500' : 'text-gray-600'} text-lg`}>👏</span>
+                            <span className="text-sm text-gray-700">{clapsMap[article.id] ?? article.claps ?? 0}</span>
                           </button>
                         </div>
                       </div>
@@ -702,7 +515,7 @@ export default function Home() {
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Trending</h3>
                 <div className="bg-white border border-gray-100 rounded-lg divide-y divide-gray-100 overflow-hidden shadow-sm">
-                  {newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).slice(0,6).map((article, index) => (
+                  {trendingArticles.map((article, index) => (
                     <a
                       key={article.id}
                       className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors"
@@ -717,8 +530,15 @@ export default function Home() {
                         <h4 className="text-sm font-semibold text-gray-900 line-clamp-2">{article.title}</h4>
                         <div className="mt-1 text-xs text-gray-500">By {article.author} • {article.date} • {article.readTime}</div>
                       </div>
-                      <div className="hidden sm:flex items-center text-xs text-gray-400">
-                        {article.claps} 👏
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => toggleLike(article.id)}
+                          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 transition-colors"
+                          aria-label={`Clap for ${article.title}`}
+                        >
+                          <span className="text-sm text-gray-700">👏</span>
+                          <span className="text-xs text-gray-500">{clapsMap[article.id] ?? article.claps ?? 0}</span>
+                        </button>
                       </div>
                     </a>
                   ))}
