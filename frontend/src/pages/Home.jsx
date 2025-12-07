@@ -185,7 +185,13 @@ export default function Home() {
   } else if (tokens.length) {
     baseFeed = filteredAll
   } else {
-    baseFeed = newsArticles.slice(1)
+    // Exclude the featured article (by id) rather than always dropping the first
+    // item. Using slice(1) incorrectly removes the newest article if it's not
+    // actually the featured article — which caused high-clap articles to be
+    // omitted from filtering/sorting. This keeps the featured article out of
+    // the main feed regardless of its position.
+    const featuredId = featuredArticle?.id ?? null
+    baseFeed = featuredId ? newsArticles.filter(a => a.id !== featuredId) : newsArticles.slice()
   }
 
   // Apply author filter if set
