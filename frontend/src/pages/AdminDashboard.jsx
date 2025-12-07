@@ -26,8 +26,11 @@ export default function AdminDashboard() {
 
   const fetchNews = async () => {
     try {
+      const token = localStorage.getItem('token')
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const res = await fetch(`${API_BASE_URL}/api/news?limit=100`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to load news')
@@ -69,9 +72,12 @@ export default function AdminDashboard() {
           : [],
         claps: Number(formData.claps) || 0
       }
+      const token = localStorage.getItem('token')
+      const headers = { 'Content-Type': 'application/json' }
+      if (token) headers.Authorization = `Bearer ${token}`
       const res = await fetch(`${API_BASE_URL}/api/news`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(payload)
       })
@@ -90,9 +96,13 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this news article?')) return
     try {
+      const token = localStorage.getItem('token')
+      const headers = {}
+      if (token) headers.Authorization = `Bearer ${token}`
       const res = await fetch(`${API_BASE_URL}/api/news/${id}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       })
       if (!res.ok) {
         const data = await res.json()
@@ -113,6 +123,8 @@ export default function AdminDashboard() {
     } catch (err) {
       // logout failed (ignored)
     } finally {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       navigate('/creator', { replace: true })
     }
   }
