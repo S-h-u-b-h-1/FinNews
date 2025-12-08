@@ -20,6 +20,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState(initialArticle)
   const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -56,6 +57,7 @@ export default function AdminDashboard() {
 
   const resetForm = () => {
     setFormData(initialArticle)
+    setEditingId(null)
   }
 
   const handleCreateNews = async (e) => {
@@ -75,15 +77,36 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('token')
       const headers = { 'Content-Type': 'application/json' }
       if (token) headers.Authorization = `Bearer ${token}`
-      const res = await fetch(`${API_BASE_URL}/api/news`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || data.error || 'Failed to upload news')
-      setMessage('News article published!')
+
+      let res
+      let data
+      if (editingId) {
+        // Update existing article
+        res = await fetch(`${API_BASE_URL}/api/news/${editingId}`, {
+          method: 'PUT',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        })
+        data = await res.json()
+        if (!res.ok) throw new Error(data.message || data.error || 'Failed to update news')
+        setMessage('News article updated!')
+        // update local list
+        setNews((prev) => prev.map((n) => (n.id === data.id ? data : n)))
+      } else {
+        // Create new article
+        res = await fetch(`${API_BASE_URL}/api/news`, {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        })
+        data = await res.json()
+        if (!res.ok) throw new Error(data.message || data.error || 'Failed to upload news')
+        setMessage('News article published!')
+        // add to local list
+        setNews((prev) => [data, ...prev])
+      }
       resetForm()
       fetchNews()
     } catch (err) {
@@ -235,13 +258,36 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDelete(article.id)}
-                    className="inline-flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"
-                  >
-                    <Trash2 size={16} />
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        // populate form for editing
+                        setFormData({
+                          title: article.title || '',
+                          description: article.description || '',
+                          category: article.category || '',
+                          date: article.date || '',
+                          image: article.image || '',
+                          author: article.author || '',
+                          readTime: article.readTime || '',
+                          tags: (article.tags || []).join(', '),
+                          claps: article.claps || 0
+                        })
+                        setEditingId(article.id)
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(article.id)}
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"
+                    >
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
               {news.length === 0 && <div className="text-center text-gray-500 py-12">No news uploaded yet.</div>}
