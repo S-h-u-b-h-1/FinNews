@@ -12,6 +12,8 @@ export default function Navbar() {
   const navigate = useNavigate()
 
   const isActive = (path) => location.pathname === path
+  // Hide the global navbar on admin routes (dashboard and admin pages)
+  if (location.pathname && location.pathname.startsWith('/admin')) return null
 
   
 
