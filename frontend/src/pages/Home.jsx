@@ -1,7 +1,9 @@
 // Using emoji for claps instead of an icon
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useContext } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getNews } from '../utils/api'
+import { getComments, createComment as apiCreateComment, updateComment as apiUpdateComment, deleteComment as apiDeleteComment } from '../utils/api'
+import { AuthContext } from '../context/AuthContext'
 
 export default function Home() {
   const [likedArticles, setLikedArticles] = useState({})
@@ -11,6 +13,12 @@ export default function Home() {
 
   // Track clap counts per-article locally so UI updates immediately when users clap
   const [clapsMap, setClapsMap] = useState({})
+  const { user } = useContext(AuthContext)
+
+  // comments per news id
+  const [commentsMap, setCommentsMap] = useState({})
+  const [commentDrafts, setCommentDrafts] = useState({})
+  const [editingCommentId, setEditingCommentId] = useState(null)
 
   // Fetch news from API
   useEffect(() => {
@@ -41,7 +49,7 @@ export default function Home() {
     fetchNews()
   }, [])
 
-  // Initialize clapsMap from fetched articles
+  // Initialize clapsMap from fetched articles and load comments
   useEffect(() => {
     if (!newsArticles || newsArticles.length === 0) return
     const map = {}
@@ -49,6 +57,27 @@ export default function Home() {
       map[a.id] = Number.isFinite(a.claps) ? a.claps : 0
     })
     setClapsMap(map)
+
+    // fetch comments for all articles (small scale). Store under commentsMap[newsId]
+    const loadAllComments = async () => {
+      try {
+        const entries = await Promise.all(
+          newsArticles.map(async (a) => {
+            try {
+              const res = await getComments(a.id)
+              return [a.id, res.comments || []]
+            } catch (e) {
+              return [a.id, []]
+            }
+          })
+        )
+        const cm = Object.fromEntries(entries)
+        setCommentsMap(cm)
+      } catch (err) {
+        // ignore
+      }
+    }
+    loadAllComments()
   }, [newsArticles])
 
   const toggleLike = (id) => {
@@ -57,6 +86,51 @@ export default function Home() {
       ...prevMap,
       [id]: (prevMap[id] || 0) + 1
     }))
+  }
+
+  // Comments handlers
+  const handleCreateComment = async (newsId) => {
+    const text = (commentDrafts[newsId] || '').trim()
+    if (!text) return
+    try {
+      const c = await apiCreateComment(newsId, { content: text })
+      setCommentsMap((prev) => ({
+        ...prev,
+        [newsId]: [c, ...(prev[newsId] || [])]
+      }))
+      setCommentDrafts((prev) => ({ ...prev, [newsId]: '' }))
+    } catch (err) {
+      console.error('Failed to create comment', err)
+    }
+  }
+
+  const handleUpdateComment = async (commentId, newsId) => {
+    const text = (commentDrafts[commentId] || '').trim()
+    if (!text) return
+    try {
+      const updated = await apiUpdateComment(commentId, { content: text })
+      setCommentsMap((prev) => ({
+        ...prev,
+        [newsId]: (prev[newsId] || []).map((c) => (c.id === updated.id ? updated : c))
+      }))
+      setEditingCommentId(null)
+      setCommentDrafts((prev) => ({ ...prev, [commentId]: '' }))
+    } catch (err) {
+      console.error('Failed to update comment', err)
+    }
+  }
+
+  const handleDeleteComment = async (commentId, newsId) => {
+    if (!window.confirm('Delete this comment?')) return
+    try {
+      await apiDeleteComment(commentId)
+      setCommentsMap((prev) => ({
+        ...prev,
+        [newsId]: (prev[newsId] || []).filter((c) => c.id !== commentId)
+      }))
+    } catch (err) {
+      console.error('Failed to delete comment', err)
+    }
   }
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -471,6 +545,60 @@ export default function Home() {
                             <span className="text-sm text-gray-700">{clapsMap[article.id] ?? article.claps ?? 0}</span>
                           </button>
                         </div>
+                      </div>
+
+                      {/* Comments */}
+                      <div className="mt-4">
+                        <div className="space-y-3">
+                          {(commentsMap[article.id] || []).map((c) => (
+                            <div key={c.id} className="text-sm bg-gray-50 p-3 rounded-md">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-700 mb-1"><span className="font-medium">{c.author?.name || c.author?.email}</span> <span className="text-gray-400">· {new Date(c.createdAt).toLocaleString()}</span></p>
+                                  {editingCommentId === c.id ? (
+                                    <>
+                                      <textarea
+                                        value={commentDrafts[c.id] ?? c.content}
+                                        onChange={(e) => setCommentDrafts(prev => ({ ...prev, [c.id]: e.target.value }))}
+                                        className="w-full border p-2 rounded mb-2"
+                                      />
+                                      <div className="flex gap-2">
+                                        <button onClick={() => handleUpdateComment(c.id, article.id)} className="px-3 py-1 bg-black text-white rounded">Save</button>
+                                        <button onClick={() => { setEditingCommentId(null); setCommentDrafts(prev => ({ ...prev, [c.id]: '' })) }} className="px-3 py-1 border rounded">Cancel</button>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <p className="text-gray-800 whitespace-pre-wrap">{c.content}</p>
+                                      {user && (user.id === c.author?.id || user.role === 'admin') && (
+                                        <div className="mt-2 flex gap-3">
+                                          <button onClick={() => { setEditingCommentId(c.id); setCommentDrafts(prev => ({ ...prev, [c.id]: c.content })) }} className="text-sm text-blue-600">Edit</button>
+                                          <button onClick={() => handleDeleteComment(c.id, article.id)} className="text-sm text-red-600">Delete</button>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {user ? (
+                          <div className="mt-3">
+                            <textarea
+                              value={commentDrafts[article.id] ?? ''}
+                              onChange={(e) => setCommentDrafts(prev => ({ ...prev, [article.id]: e.target.value }))}
+                              placeholder="Write a comment..."
+                              className="w-full border p-2 rounded"
+                            />
+                            <div className="mt-2 flex justify-end">
+                              <button onClick={() => handleCreateComment(article.id)} className="px-3 py-1 bg-black text-white rounded">Comment</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-3 text-sm text-gray-500">Sign in to leave a comment.</div>
+                        )}
                       </div>
                     </div>
 

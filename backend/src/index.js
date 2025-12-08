@@ -6,6 +6,10 @@ import path from 'path'
 import newsRoutes from './routes/newsRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
+import commentRoutes from './routes/commentRoutes.js'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 dotenv.config()
 
@@ -68,6 +72,7 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/news', newsRoutes)
+app.use('/api/comments', commentRoutes)
 
 // Start server
 // If in production, serve the built frontend from the parent frontend/dist folder
@@ -84,6 +89,33 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-})
+const startServer = async () => {
+  try {
+    // Ensure Comment table exists (helpful if migrations haven't been applied yet)
+    const ensureSql = `
+      CREATE TABLE IF NOT EXISTS "Comment" (
+        "id" SERIAL PRIMARY KEY,
+        "content" TEXT NOT NULL,
+        "authorId" INTEGER NOT NULL,
+        "newsId" INTEGER NOT NULL,
+        "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT now()
+      );
+    `
+    await prisma.$executeRawUnsafe(ensureSql)
+
+    // Attempt to add foreign keys if they don't exist (no-op if already present)
+    const fk1 = `ALTER TABLE "Comment" ADD CONSTRAINT IF NOT EXISTS comment_author_fk FOREIGN KEY ("authorId") REFERENCES "User" (id) ON DELETE CASCADE;`
+    const fk2 = `ALTER TABLE "Comment" ADD CONSTRAINT IF NOT EXISTS comment_news_fk FOREIGN KEY ("newsId") REFERENCES "News" (id) ON DELETE CASCADE;`
+    await prisma.$executeRawUnsafe(fk1)
+    await prisma.$executeRawUnsafe(fk2)
+  } catch (err) {
+    console.warn('Could not ensure Comment table exists:', err.message)
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`)
+  })
+}
+
+startServer()

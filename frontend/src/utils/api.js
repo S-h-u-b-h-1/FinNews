@@ -85,3 +85,44 @@ export const clapNews = async (id) => {
     throw error;
   }
 };
+
+// Comments API
+export const getComments = async (newsId) => {
+  try {
+    const response = await api.get(`/news/${newsId}/comments`)
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching comments for news ${newsId}:`, error)
+    throw error
+  }
+}
+
+export const createComment = async (newsId, data) => {
+  try {
+    const response = await api.post(`/news/${newsId}/comments`, data)
+    return response.data
+  } catch (error) {
+    console.error(`Error creating comment for news ${newsId}:`, error)
+    throw error
+  }
+}
+
+export const updateComment = async (commentId, data) => {
+  try {
+    const response = await api.put(`/comments/${commentId}`, data)
+    return response.data
+  } catch (error) {
+    console.error(`Error updating comment ${commentId}:`, error)
+    throw error
+  }
+}
+
+export const deleteComment = async (commentId) => {
+  try {
+    const response = await api.delete(`/comments/${commentId}`)
+    return response.data
+  } catch (error) {
+    console.error(`Error deleting comment ${commentId}:`, error)
+    throw error
+  }
+}
