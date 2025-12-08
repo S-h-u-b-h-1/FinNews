@@ -20,34 +20,80 @@ export default function Home() {
   const [commentDrafts, setCommentDrafts] = useState({})
   const [editingCommentId, setEditingCommentId] = useState(null)
 
-  // Fetch news from API
+  // Server-driven feed: fetch from API whenever filters/search/pagination change
+  const pageSize = 5
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+
+  // Sidebar data
+  const [featuredArticles, setFeaturedArticles] = useState([])
+  const [trendingArticles, setTrendingArticles] = useState([])
+
+  // Search & filter state (move before data-loading effect so they're initialized)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialFilters = searchParams.get('filters') ? searchParams.get('filters').split(',').filter(Boolean) : []
+  const [activeFilters, setActiveFilters] = useState(initialFilters)
+  const initialSort = searchParams.get('sort') || 'newest'
+  const [sortOrder, setSortOrder] = useState(initialSort)
+  const initialMinClaps = (() => {
+    const v = parseInt(searchParams.get('minClaps') || '0', 10)
+    return Number.isFinite(v) && v > 0 ? v : 0
+  })()
+  const [minClaps, setMinClaps] = useState(initialMinClaps)
+  const initialClapSort = searchParams.get('clapSort') || ''
+  const [clapSort, setClapSort] = useState(initialClapSort)
+  const initialAuthor = searchParams.get('author') || ''
+  const [authorFilter, setAuthorFilter] = useState(initialAuthor)
+  // Track current page locally; server returns `totalPages`/`totalItems`
+  const [page, setPage] = useState(1)
+  
+
   useEffect(() => {
-    const fetchNews = async () => {
+    let mounted = true
+    const load = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        const response = await getNews({ limit: 100 }) // Get all news articles
-        const sanitize = (a) => ({
-          ...a,
-          // ensure tags is an array of lowercase trimmed strings
-          tags: Array.isArray(a.tags) ? a.tags.map(t => String(t || '').trim().toLowerCase()) : [],
-          // ensure claps is a number
-          claps: typeof a.claps === 'number' ? a.claps : Number(a.claps) || 0,
-          // ensure author is a trimmed string
-          author: String(a.author || '').trim()
-        })
-        setNewsArticles((response.news || []).map(sanitize))
+        const params = {
+          page,
+          limit: pageSize,
+          q: debouncedQuery || undefined,
+          filters: activeFilters && activeFilters.length ? activeFilters.join(',') : undefined,
+          author: authorFilter || undefined,
+          minClaps: minClaps && minClaps > 0 ? String(minClaps) : undefined,
+          clapSort: clapSort || undefined,
+          sort: sortOrder || undefined
+        }
+
+        const [feedRes, featuredRes, trendingRes] = await Promise.all([
+          getNews(params),
+          // fetch featured list for sidebar/featured article
+          getNews({ filters: 'featured', limit: 7 }),
+          // top 3 by claps for Trending
+          getNews({ clapSort: 'max', limit: 3 })
+        ])
+
+        if (!mounted) return
+        setNewsArticles(feedRes.news || [])
+        setTotalItems(feedRes.total || (feedRes.news || []).length)
+        setTotalPages(feedRes.totalPages || 1)
+        setFeaturedArticles((featuredRes && featuredRes.news) || [])
+        setTrendingArticles((trendingRes && trendingRes.news) || [])
         setError(null)
       } catch (err) {
         console.error('Error fetching news:', err)
         setError('Failed to load news articles')
-        setNewsArticles([]) // Fallback to empty array
+        setNewsArticles([])
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
 
-    fetchNews()
-  }, [])
+    load()
+    return () => { mounted = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery, activeFilters, authorFilter, minClaps, clapSort, sortOrder, page])
 
   // Initialize clapsMap from fetched articles and load comments
   useEffect(() => {
@@ -133,20 +179,7 @@ export default function Home() {
     }
   }
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [searchParams, setSearchParams] = useSearchParams()
-  const initialFilters = searchParams.get('filters') ? searchParams.get('filters').split(',').filter(Boolean) : []
-  const [activeFilters, setActiveFilters] = useState(initialFilters) 
-  const initialSort = searchParams.get('sort') || 'newest'
-  const [sortOrder, setSortOrder] = useState(initialSort) // 'newest' | 'oldest'
-  const initialMinClaps = (() => {
-    const v = parseInt(searchParams.get('minClaps') || '0', 10)
-    return Number.isFinite(v) && v > 0 ? v : 0
-  })()
-  const [minClaps, setMinClaps] = useState(initialMinClaps)
-  const initialClapSort = searchParams.get('clapSort') || ''
-  const [clapSort, setClapSort] = useState(initialClapSort)
+  
 
     useEffect(() => {
       const t = setTimeout(() => {
@@ -161,151 +194,17 @@ export default function Home() {
     }
 
     const escapeRegex = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-    const highlight = (text = '', tokens = []) => {
-      if (!tokens || tokens.length === 0) return text
-      const pattern = tokens.map(escapeRegex).join('|')
-      const re = new RegExp(`(${pattern})`, 'ig')
-      const parts = String(text).split(re)
-      return parts.map((part, i) =>
-        re.test(part) ? (
-          <mark key={i} className="bg-yellow-200 rounded px-0.5">{part}</mark>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )
-    }
+    // Highlighting/search tokenization removed from frontend — server performs
+    // all searching/filtering. Keep a no-op highlight helper to avoid JSX changes.
+    const highlight = (text = '') => text
 
-  const normalize = (s = '') =>
-    String(s)
-      .normalize('NFD')
-      .replace(/\p{Diacritic}/gu, '')
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, ' ')
-
-  const tokenize = (q = '') =>
-    normalize(q)
-      .split(/\s+/)
-      .filter(Boolean)
-
-  const tokens = useMemo(() => tokenize(debouncedQuery), [debouncedQuery])
-
-  const filteredAll = useMemo(() => {
-    if (!tokens.length) return newsArticles
-
-    return newsArticles.filter((a) => {
-      const title = normalize(a.title)
-      const desc = normalize(a.description)
-      const author = normalize(a.author)
-      const category = normalize(a.category)
-      const readTime = String(a.readTime || '')
-      const claps = String(a.claps || '')
-
-      return tokens.every((t) => {
-        // numeric token: match claps or number in readTime
-        if (/^\d+$/.test(t)) {
-          if (claps.includes(t)) return true
-          if (readTime.includes(t)) return true
-        }
-        // Otherwise check textual fields
-        return (
-          title.includes(t) ||
-          desc.includes(t) ||
-          author.includes(t) ||
-          category.includes(t)
-        )
-      })
-    })
-  }, [newsArticles, tokens])
-
-
-  const featuredArticles = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('featured')).slice(0, 7), [newsArticles])
-
-  // IDs for quick lookups (driven by tags now)
-  const trendingIds = useMemo(() => newsArticles.filter(a => Array.isArray(a.tags) && a.tags.includes('trending')).map(a => a.id), [newsArticles])
-  const featuredIds = useMemo(() => featuredArticles.map(a => a.id), [featuredArticles])
-
-  // Compute trending articles by clap count (descending). Use clapsMap (live) or article.claps as fallback.
-  const trendingArticles = useMemo(() => {
-    if (!newsArticles || newsArticles.length === 0) return []
-    return newsArticles
-      .slice()
-      .sort((a, b) => {
-        const ca = (clapsMap[a.id] ?? a.claps ?? 0)
-        const cb = (clapsMap[b.id] ?? b.claps ?? 0)
-        return cb - ca
-      })
-      .slice(0, 3)
-  }, [newsArticles, clapsMap])
-
-  // Author filter list
+  // derive list of unique authors from the current feed (server-driven)
   const uniqueAuthors = useMemo(() => Array.from(new Set(newsArticles.map(a => a.author))).sort(), [newsArticles])
-  const initialAuthor = searchParams.get('author') || ''
-  const [authorFilter, setAuthorFilter] = useState(initialAuthor)
 
-  // Keep Featured constant (always the first featured article) and only
-  // change the main feed when a search or explicit filter is active.
-  const featuredArticle = featuredArticles[0]
+  // Keep Featured constant (first from server-fetched featured list)
+  const featuredArticle = (featuredArticles && featuredArticles[0]) || null
 
-  // Decide which list should drive the main feed. Behavior:
-  // - If an explicit filter is active (trending/featured) show that set (and
-  //   still apply text search tokens if present).
-  // - Otherwise, if the user typed a search (tokens), show matching results
-  //   across all articles.
-  // - Otherwise show the default feed (articles after the featured one).
-  let baseFeed = []
-  if (activeFilters && activeFilters.length > 0) {
-    // show articles that have any of the selected tags
-    baseFeed = filteredAll.filter(a => Array.isArray(a.tags) && a.tags.some(t => activeFilters.includes(t)))
-  } else if (tokens.length) {
-    baseFeed = filteredAll
-  } else {
-    // Exclude the featured article (by id) rather than always dropping the first
-    // item. Using slice(1) incorrectly removes the newest article if it's not
-    // actually the featured article — which caused high-clap articles to be
-    // omitted from filtering/sorting. This keeps the featured article out of
-    // the main feed regardless of its position.
-    const featuredId = featuredArticle?.id ?? null
-    baseFeed = featuredId ? newsArticles.filter(a => a.id !== featuredId) : newsArticles.slice()
-  }
-
-  // Apply author filter if set
-  if (authorFilter) {
-    const af = String(authorFilter).trim().toLowerCase()
-    if (af.length) {
-      baseFeed = baseFeed.filter(a => String(a.author || '').toLowerCase().includes(af))
-    }
-  }
-
-  // Apply minimum clap filter if set
-  if (minClaps && minClaps > 0) {
-    baseFeed = baseFeed.filter(a => (clapsMap[a.id] ?? a.claps ?? 0) >= minClaps)
-  }
-
-  // Apply sorting by date (parse article.date)
-  const sortByDate = (list) => {
-    // safe copy
-    return list.slice().sort((a, b) => {
-      const da = new Date(a.date)
-      const db = new Date(b.date)
-      if (Number.isNaN(da) || Number.isNaN(db)) return 0
-      return sortOrder === 'oldest' ? da - db : db - da
-    })
-  }
-
-  baseFeed = sortByDate(baseFeed)
-
-  // Apply clap-based sorting when requested (use live `clapsMap` with article fallback)
-  if (clapSort && clapSort !== '') {
-    baseFeed = baseFeed.slice().sort((a, b) => {
-      const ca = (clapsMap[a.id] ?? a.claps ?? 0)
-      const cb = (clapsMap[b.id] ?? b.claps ?? 0)
-      return clapSort === 'min' ? ca - cb : cb - ca
-    })
-  }
-
-  // Pagination state: 5 articles per page in the main feed
-  const [page, setPage] = useState(1)
-  const pageSize = 5
+  // Pagination state: page is tracked locally, server returns paginated results
 
   // Reset to first page when the search changes
   useEffect(() => {
@@ -336,18 +235,14 @@ export default function Home() {
     // we intentionally include setSearchParams in deps through react-hooks linting
   }, [activeFilters, authorFilter, page, sortOrder, minClaps, clapSort, setSearchParams])
 
-  const totalItems = baseFeed.length
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
-
-  // Ensure current page is valid if the filtered set shrinks
+  // Use server-provided pagination: `newsArticles` already contains the
+  // current page's items, `totalItems` and `totalPages` are managed by state.
+  // Ensure current page is valid if the filtered set (server-side) shrinks.
   useEffect(() => {
     if (page > totalPages) setPage(1)
   }, [totalPages, page])
 
-  const paginatedArticles = useMemo(() => {
-    const start = (page - 1) * pageSize
-    return baseFeed.slice(start, start + pageSize)
-  }, [baseFeed, page])
+  const paginatedArticles = newsArticles || []
 
   if (loading) {
     return (
@@ -514,7 +409,7 @@ export default function Home() {
                         </span>
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-gray-600 transition-colors line-clamp-3">
-                          {highlight(article.title, tokens)}
+                          {highlight(article.title)}
                           {/* Badges for tags */}
                           <span className="ml-2 inline-flex items-center gap-2">
                             {Array.isArray(article.tags) && article.tags.includes('featured') && (
@@ -526,7 +421,7 @@ export default function Home() {
                           </span>
                       </h3>
                       <p className="text-gray-600 text-base mb-4 line-clamp-2">
-                        {highlight(article.description, tokens)}
+                        {highlight(article.description)}
                       </p>
 
                       {/* Article Meta */}

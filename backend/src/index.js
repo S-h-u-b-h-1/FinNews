@@ -104,11 +104,13 @@ const startServer = async () => {
     `
     await prisma.$executeRawUnsafe(ensureSql)
 
-    // Attempt to add foreign keys if they don't exist (no-op if already present)
-    const fk1 = `ALTER TABLE "Comment" ADD CONSTRAINT IF NOT EXISTS comment_author_fk FOREIGN KEY ("authorId") REFERENCES "User" (id) ON DELETE CASCADE;`
-    const fk2 = `ALTER TABLE "Comment" ADD CONSTRAINT IF NOT EXISTS comment_news_fk FOREIGN KEY ("newsId") REFERENCES "News" (id) ON DELETE CASCADE;`
-    await prisma.$executeRawUnsafe(fk1)
-    await prisma.$executeRawUnsafe(fk2)
+    // Attempt to add foreign keys only if they don't exist. PostgreSQL does not
+    // support `ADD CONSTRAINT IF NOT EXISTS`, so use a safe DO block that checks
+    // `pg_constraint` and adds the constraint when missing.
+    const fkAuthor = `DO $$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'comment_author_fk') THEN\n    ALTER TABLE "Comment" ADD CONSTRAINT comment_author_fk FOREIGN KEY ("authorId") REFERENCES "User" (id) ON DELETE CASCADE;\n  END IF;\nEND$$;`;
+    const fkNews = `DO $$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'comment_news_fk') THEN\n    ALTER TABLE "Comment" ADD CONSTRAINT comment_news_fk FOREIGN KEY ("newsId") REFERENCES "News" (id) ON DELETE CASCADE;\n  END IF;\nEND$$;`;
+    await prisma.$executeRawUnsafe(fkAuthor)
+    await prisma.$executeRawUnsafe(fkNews)
   } catch (err) {
     console.warn('Could not ensure Comment table exists:', err.message)
   }

@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/env';
 
-const API_URL = API_BASE_URL + "/api";
+// Ensure API_URL ends with `/api` exactly once. `VITE_API_BASE_URL` may be
+// configured as a host (e.g. `http://localhost:5002`) or as a path (`/api`).
+let API_URL = API_BASE_URL || ''
+API_URL = API_URL.replace(/\/$/, '')
+if (!API_URL.endsWith('/api')) API_URL = API_URL + '/api'
 
 // Create axios instance
 const api = axios.create({

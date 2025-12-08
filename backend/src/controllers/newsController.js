@@ -8,33 +8,90 @@ const prisma = new PrismaClient();
 // @access  Public
 export const getNews = asyncHandler(async (req, res) => {
   try {
-    const { category, tag, page = 1, limit = 10 } = req.query;
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
+    const {
+      page = 1,
+      limit = 10,
+      filters, // comma-separated tags
+      author,
+      minClaps,
+      clapSort, // 'min' or 'max'
+      sort, // 'newest' or 'oldest'
+      q // search query
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, parseInt(limit) || 10);
     const skip = (pageNum - 1) * limitNum;
-    
+
     const where = {};
-    if (category) where.category = category;
-    if (tag) where.tags = { has: tag };
+
+    // Filter by tags (any match)
+    if (filters) {
+      const tagsArr = String(filters).split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+      if (tagsArr.length) where.tags = { hasSome: tagsArr }
+    }
+
+    if (author) {
+      where.author = { contains: String(author), mode: 'insensitive' }
+    }
+
+    if (minClaps) {
+      const m = parseInt(minClaps, 10)
+      if (!Number.isNaN(m)) where.claps = { gte: m }
+    }
+
+    // Full-text-ish token search across title, description, author, category
+    if (q && String(q).trim()) {
+      const tokens = String(q).trim().split(/\s+/).filter(Boolean)
+      if (tokens.length) {
+        where.AND = tokens.map((t) => {
+          const token = t.trim()
+          const isNum = /^\d+$/.test(token)
+          const or = [
+            { title: { contains: token, mode: 'insensitive' } },
+            { description: { contains: token, mode: 'insensitive' } },
+            { author: { contains: token, mode: 'insensitive' } },
+            { category: { contains: token, mode: 'insensitive' } }
+          ]
+          if (isNum) {
+            const n = parseInt(token, 10)
+            or.push({ claps: { equals: n } })
+            or.push({ readTime: { contains: token } })
+          }
+          return { OR: or }
+        })
+      }
+    }
+
+    // Build orderBy array: clap sort first (if present), then createdAt/date
+    const orderBy = []
+    if (clapSort && clapSort !== '') {
+      if (clapSort === 'min') orderBy.push({ claps: 'asc' })
+      else orderBy.push({ claps: 'desc' })
+    }
+    // sort by createdAt (newest/oldest)
+    if (sort === 'oldest') orderBy.push({ createdAt: 'asc' })
+    else orderBy.push({ createdAt: 'desc' })
 
     const [news, total] = await Promise.all([
       prisma.news.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: limitNum,
       }),
       prisma.news.count({ where })
-    ]);
+    ])
 
     res.json({
       news,
-      totalPages: Math.ceil(total / limitNum),
-      currentPage: pageNum
-    });
+      totalPages: Math.max(1, Math.ceil(total / limitNum)),
+      currentPage: pageNum,
+      total
+    })
   } catch (error) {
-    console.error('Error fetching news:', error);
-    res.status(500).json({ message: 'Failed to fetch news. Please try again.' });
+    console.error('Error fetching news:', error)
+    res.status(500).json({ message: 'Failed to fetch news. Please try again.' })
   }
 });
 
